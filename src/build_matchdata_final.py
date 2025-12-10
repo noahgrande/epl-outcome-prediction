@@ -15,6 +15,55 @@ This script:
 
 import pandas as pd
 from pathlib import Path
+import re
+
+
+FORMATION_MAP = {
+    "4-3": "4-3-3",
+    "4-4": "4-4-2",
+    "4-2": "4-2-3-1",
+    "3-5": "3-5-2",
+    "3-4": "3-4-3",
+    "5-3": "5-3-2",
+    "5-4": "5-4-1",
+    "4-1": "4-1-4-1",
+    "4-5": "4-5-1",
+}
+
+def fix_formation(raw):
+    if raw is None or pd.isna(raw):
+        return raw
+
+    raw = str(raw).strip()
+
+    # Already clean: return as-is
+    if re.fullmatch(r"\d-\d-\d(-\d)?", raw):
+        return raw
+
+    # Extract digits
+    nums = re.findall(r"\d+", raw)
+
+    # Remove corrupted endings (common FBref bug)
+    nums = [n for n in nums if n not in ("2001", "2002", "2003")]
+
+    # If we have 4 numbers: X-Y-Z-W (normal)
+    if len(nums) == 4:
+        return "-".join(nums)
+
+    # If we have 3 numbers: X-Y-Z
+    if len(nums) == 3:
+        return "-".join(nums)
+
+    # If we have 2 numbers: X-Y → try to match known formations
+    if len(nums) == 2:
+        key = f"{nums[0]}-{nums[1]}"
+        return FORMATION_MAP.get(key, key)
+
+    # Fallback return raw
+    return raw
+
+
+
 
 RAW_FILE = "data/raw/matchdata_21-25.csv"
 OUT_PIVOT = "data/processed/matchdata_clean.csv"
@@ -242,8 +291,9 @@ def pivot(home, away):
     out["away_possession"] = a
 
     # Formations
-    out["home_formation"] = merged["formation_home"]
-    out["away_formation"] = merged["formation_away"]
+    out["home_formation"] = merged["formation_home"].apply(fix_formation)
+    out["away_formation"] = merged["formation_away"].apply(fix_formation)
+
 
     # Final sorting
     out = out.sort_values(["season", "match_date"])
