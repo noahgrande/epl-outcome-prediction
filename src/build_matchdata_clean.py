@@ -1,212 +1,166 @@
 """
-BUILD MATCHDATA BASE — STEP 1 (NO PIVOT)
-
-This script:
-1. Loads matchdata_21-25.csv
-2. Normalizes ALL team names into a single canonical name
-3. Renames columns to clear human-readable names
-4. Keeps only the useful columns
-5. Adds numeric matchweek
-6. Sorts by season > matchweek > team > date
-7. Saves a clean, ordered base dataset
+BUILD MATCHDATA CLEAN — FINAL PIVOT VERSION
+Uses the exact list of columns provided.
 """
 
 import pandas as pd
 
-RAW_FILE = "data/raw/matchdata_21-25.csv"
-OUT_FILE = "data/processed/matchdata_base.csv"
+BASE_FILE = "data/processed/matchdata_base.csv"
+OUT_FILE = "data/processed/matchdata_clean.csv"
 
 
-# ----------------------------------------------------------
-# NORMALISATION DES NOMS D'ÉQUIPES
-# ----------------------------------------------------------
-
-TEAM_NORMALIZATION = {
-    # Big 6
-    "arsenal": "arsenal",
-    "chelsea": "chelsea",
-    "liverpool": "liverpool",
-    "manchester city": "manchester city",
-    "man city": "manchester city",
-    "manchester united": "manchester united",
-    "man united": "manchester united",
-    "man utd": "manchester united",
-    "mu" : "manchester united",
-    "manchester utd": "manchester united",
-
-    # Tottenham
-    "tottenham": "tottenham hotspur",
-    "tottenham hotspurs": "tottenham hotspur",
-    "tottenham hotspur": "tottenham hotspur",
-    "spurs": "tottenham hotspur",
-
-    # Other EPL teams
-    "aston villa": "aston villa",
-    "villa": "aston villa",
-
-    "bournemouth": "bournemouth",
-    "afc bournemouth": "bournemouth",
-
-    "brentford": "brentford",
-
-    "brighton": "brighton and hove albion",
-    "brighton and hove albion": "brighton and hove albion",
-    "brighton hove albion": "brighton and hove albion",
-
-    "burnley": "burnley",
-
-    "crystal palace": "crystal palace",
-
-    "everton": "everton",
-
-    "fulham": "fulham",
-
-    "ipswich": "ipswich town",
-    "ipswich town": "ipswich town",
-
-    "leeds": "leeds united",
-    "leeds united": "leeds united",
-
-    "leicester": "leicester city",
-    "leicester city": "leicester city",
-
-    "luton": "luton town",
-    "luton town": "luton town",
-
-    "newcastle": "newcastle united",
-    "newcastle utd": "newcastle united",
-    "newcastle united": "newcastle united",
-
-    "forest": "nottingham forest",
-    "nottingham": "nottingham forest",
-    "nottingham forest": "nottingham forest",
-    "nott'ham forest": "nottingham forest",
-
-    "sheffield": "sheffield united",
-    "sheffield utd": "sheffield united",
-    "sheffield united": "sheffield united",
-
-    "southampton": "southampton",
-
-    "west ham": "west ham united",
-    "west ham utd": "west ham united",
-    "west ham united": "west ham united",
-
-    "wolves": "wolverhampton wanderers",
-    "wolverhampton": "wolverhampton wanderers",
-    "wolverhampton wanderers": "wolverhampton wanderers",
-}
-
-
-def normalize_team(x):
-    x = str(x).lower().strip()
-    return TEAM_NORMALIZATION.get(x, x)
-
-
-# ----------------------------------------------------------
-# COLUMN RENAMING (MAKE NAMES CLEARER)
-# ----------------------------------------------------------
-
-COLUMN_RENAME = {
-    "gf": "goals_for",
-    "ga": "goals_against",
-    "xg": "xg",
-    "npxg": "non_penalty_xg",
-    "xga": "xg_against",
-    "psxg": "post_shot_xg",
-    "sh": "shots",
-    "sot": "shots_on_target",
-    "dist": "avg_shot_distance",
-    "sota": "shots_on_target_against",
-    "saves": "saves",
-    "save_pct": "save_percentage",
-    "poss": "possession",
-    "fk": "free_kicks",
-    "pk": "penalties_scored",
-    "pkatt": "penalties_attempted",
-    "formation": "team_formation",
-    "opp_formation": "opponent_formation",
-    "referee": "referee",
-}
-
-
-# ----------------------------------------------------------
-# COLUMNS TO KEEP
-# ----------------------------------------------------------
-
-USEFUL_COLS = [
-    "season", "date", "round", "venue", "comp",
-    "team", "opponent",
-
-    # metrics
-    "goals_for", "goals_against",
-    "xg", "non_penalty_xg", "xg_against", "post_shot_xg",
-    "shots", "shots_on_target", "avg_shot_distance",
-    "shots_on_target_against", "saves", "save_percentage",
-    "possession",
-    "free_kicks", "penalties_scored", "penalties_attempted",
-
-    # tactical
-    "team_formation", "opponent_formation",
-
-    # referee
-    "referee"
-]
-
-
-# ----------------------------------------------------------
-# MAIN PROCESS
-# ----------------------------------------------------------
-
-def load_raw():
-    df = pd.read_csv(RAW_FILE)
-
-    # clean names
-    df.columns = (
-        df.columns.str.lower()
-        .str.strip()
-        .str.replace("%", "pct")
-        .str.replace(" ", "_")
-        .str.replace(".", "_")
-    )
-
-    # parse dates
-    df["date"] = pd.to_datetime(df["date"], errors="coerce", dayfirst=False)
-    bad = df["date"].isna()
-    if bad.any():
-        df.loc[bad, "date"] = pd.to_datetime(df.loc[bad, "date"], errors="coerce", dayfirst=True)
-
-    # normalize team names
-    df["team"] = df["team"].apply(normalize_team)
-    df["opponent"] = df["opponent"].apply(normalize_team)
-
-    # rename columns to readable names
-    df = df.rename(columns=COLUMN_RENAME)
-
-    # convert matchweek to number
-    df["matchweek_num"] = df["round"].str.extract(r"(\d+)").astype(int)
-
-    # keep only relevant columns
-    keep = [c for c in USEFUL_COLS if c in df.columns]
-    df = df[keep + ["matchweek_num"]]
-
-    # sort cleanly
-    df = df.sort_values(["season", "matchweek_num", "team", "date"])
-
+# --------------------------------------------------------
+# LOAD BASE
+# --------------------------------------------------------
+def load_base():
+    df = pd.read_csv(BASE_FILE)
+    df["match_date"] = pd.to_datetime(df["match_date"])
     return df
 
 
-# ----------------------------------------------------------
-# EXECUTION
-# ----------------------------------------------------------
+# --------------------------------------------------------
+# BUILD HOME / AWAY VIEWS
+# --------------------------------------------------------
+def prepare_home_away(df):
 
+    df["is_home"] = df["venue"].str.lower().eq("home")
+
+    home = df[df["is_home"]].copy()
+    away = df[~df["is_home"]].copy()
+
+    # NEW: match_id aligned with all_matches_clean
+    def make_match_id(row, is_home):
+        date = str(row["match_date"].date())
+        home_team = row["team"] if is_home else row["opponent"]
+        away_team = row["opponent"] if is_home else row["team"]
+
+        # normalize team names exactly like all_matches_clean
+        def norm_team(t):
+            return (
+                str(t)
+                .strip()
+                .lower()
+                .replace(" ", "_")
+            )
+
+        h = norm_team(home_team)
+        a = norm_team(away_team)
+
+        return f"{date}_{h}_{a}"
+
+
+    home["match_id"] = home.apply(lambda r: make_match_id(r, True), axis=1)
+    away["match_id"] = away.apply(lambda r: make_match_id(r, False), axis=1)
+
+    return home, away
+
+
+# --------------------------------------------------------
+# PIVOT MATCHES INTO SINGLE ROW
+# --------------------------------------------------------
+def pivot_matches(home, away):
+
+    merged = home.merge(
+        away,
+        on="match_id",
+        suffixes=("_home", "_away"),
+        validate="one_to_one"
+    )
+
+    out = pd.DataFrame()
+
+    # -----------------------
+    # IDENTITY FIELDS
+    # -----------------------
+    out["match_id"] = merged["match_id"]
+    out["match_date"] = merged["match_date_home"]
+    out["season"] = merged["season_home"]
+    out["matchweek"] = merged["matchweek_home"]
+    out["matchweek_num"] = merged["matchweek_num_home"]
+    out["referee"] = merged["referee_home"]
+
+    # -----------------------
+    # TEAMS
+    # -----------------------
+    out["home_team"] = merged["team_home"]
+    out["away_team"] = merged["team_away"]
+
+    # -----------------------
+    # GOALS & RESULT
+    # -----------------------
+    out["home_goals"] = merged["goals_for_home"]
+    out["away_goals"] = merged["goals_for_away"]
+    out["goal_difference"] = merged["goals_for_home"] - merged["goals_for_away"]
+
+    # -----------------------
+    # LIST OF METRICS TO PIVOT
+    # -----------------------
+    METRICS = [
+        "xg", "non_penalty_xg", "xg_against", "post_shot_xg",
+        "goals_minus_xg", "post_shot_xg_diff",
+        "shots", "shots_on_target", "avg_shot_distance",
+        "shots_on_target_against", "saves", "clean_sheets",
+        "possession", "free_kicks", "penalties_scored", "penalties_attempted",
+        "passes_completed", "passes_attempted", "total_distance_progressed",
+        "progressive_distance", "progressive_carries",
+        "assists", "expected_assisted_goals", "expected_assists",
+        "key_passes", "shot_creating_actions", "goal_creating_actions",
+        "miscontrols", "dispossessed", "recoveries",
+        "tackles", "tackles_won", "interceptions",
+        "defensive_actions", "blocks", "clearances"
+    ]
+
+    # -----------------------
+    # SAFE COPY (NO KEYERROR)
+    # -----------------------
+    def safe_copy(prefix, metric):
+        src = f"{metric}_{prefix}"
+        dst = f"{prefix}_{metric}"
+
+        if src in merged.columns:
+            out[dst] = merged[src]
+        else:
+            out[dst] = None
+
+    for metric in METRICS:
+        safe_copy("home", metric)
+        safe_copy("away", metric)
+
+    # -----------------------
+    # FORMATIONS
+    # -----------------------
+    out["home_formation"] = merged["team_formation_home"]
+    out["away_formation"] = merged["opponent_formation_home"]
+
+    # -----------------------
+    # SORTING
+    # -----------------------
+    out = out.sort_values(
+        ["season", "matchweek_num", "match_date", "home_team"]
+    )
+
+    return out
+
+
+# --------------------------------------------------------
+# MAIN
+# --------------------------------------------------------
 if __name__ == "__main__":
-    print("Loading raw matchdata…")
 
-    df = load_raw()
+    print("Loading matchdata_base.csv ...")
+    df = load_base()
 
-    print("Final shape:", df.shape)
-    df.to_csv(OUT_FILE, index=False)
+    print(" → Loaded:", df.shape)
 
-    print(f"\n✔ Saved CLEAN BASE dataset → {OUT_FILE}")
+    print("\nBuilding HOME / AWAY views...")
+    home, away = prepare_home_away(df)
+    print("Home rows:", len(home))
+    print("Away rows:", len(away))
 
+    print("\nPivoting matches...")
+    clean = pivot_matches(home, away)
+
+    clean.to_csv(OUT_FILE, index=False)
+
+    print("\n✔ DONE — Saved CLEAN PIVOT dataset →", OUT_FILE)
+    print("Final shape:", clean.shape)
