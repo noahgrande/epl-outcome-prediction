@@ -1,6 +1,14 @@
 from pathlib import Path
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, log_loss
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 
-# import des fonctions depuis src/
+# =========================
+# IMPORT PIPELINE DATA
+# =========================
 from src.data_loader import (
     load_raw,
     load_base,
@@ -13,14 +21,27 @@ from src.data_loader import (
     build_match_level_features,
 )
 
+# =========================
+# IMPORT MODELS
+# =========================
+from src.models import train_models
+
+from src.bookmaker_baseline import evaluate_bookmaker
+
+
+
 def main():
     print("🚀 Starting project pipeline")
 
     # ----------------------------------
-    # 1. matchdata_base.csv
+    # 0. Ensure directories exist
     # ----------------------------------
     Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path("results").mkdir(parents=True, exist_ok=True)
 
+    # ----------------------------------
+    # 1. matchdata_base.csv
+    # ----------------------------------
     print("▶ Step 1: build matchdata_base.csv")
     df_base = load_raw()
     df_base.to_csv("data/processed/matchdata_base.csv", index=False)
@@ -72,10 +93,35 @@ def main():
     df_model.to_csv("data/processed/model_data.csv", index=False)
     print("✅ model_data.csv done")
 
+    # ----------------------------------
+    # 8. Train ML models
+    # ----------------------------------
+    print("▶ Step 8: training ML models")
+
+    df_model["match_date"] = pd.to_datetime(df_model["match_date"])
+    df_model = df_model.sort_values("match_date").reset_index(drop=True)
+    df_model = df_model.dropna().reset_index(drop=True)
+
+    log_model, rf_model, metrics = train_models(df_model)
+
+    # Split temporel (identique aux modèles)
+    split_idx = int(len(df_model) * 0.8)
+    df_test = df_model.iloc[split_idx:].reset_index(drop=True)
+
+    print("\n▶ Step 9: bookmaker baseline evaluation")
+    book_metrics = evaluate_bookmaker(df_test)
+
+
+
+
     print("🎉 PIPELINE FINISHED SUCCESSFULLY")
+
+
+
 
 if __name__ == "__main__":
     main()
+
 
 
 
