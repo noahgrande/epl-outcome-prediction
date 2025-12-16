@@ -94,5 +94,3 @@ if __name__ == "__main__":
     log_model, rf_model = train_models(df)
 
     print("✅ Training completed")
-
-
