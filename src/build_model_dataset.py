@@ -103,7 +103,7 @@ def build_match_level_features(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 if __name__ == "__main__":
 
-    INPUT_PATH = Path("data/processed/data_team_with_features.csv")
+    INPUT_PATH = Path("data/processed/data_after_engineering.csv")
     OUTPUT_PATH = Path("data/processed/model_data.csv")
 
     print("📥 Loading team-level data:", INPUT_PATH)
