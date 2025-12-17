@@ -1,0 +1,15 @@
+name: epl-match-prediction-1
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - joblib
+  - pytest
+  - jupyter
