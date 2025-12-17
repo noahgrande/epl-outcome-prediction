@@ -28,6 +28,8 @@ from src.models import train_models
 
 from src.bookmaker_baseline import evaluate_bookmaker
 
+from src.probabilistic_evaluation import main as probabilistic_evaluation
+
 
 
 def main():
@@ -104,12 +106,18 @@ def main():
 
     log_model, rf_model, metrics = train_models(df_model)
 
+    Path("results").mkdir(exist_ok=True)
+
     # Split temporel (identique aux modèles)
     split_idx = int(len(df_model) * 0.8)
     df_test = df_model.iloc[split_idx:].reset_index(drop=True)
 
     print("\n▶ Step 9: bookmaker baseline evaluation")
     book_metrics = evaluate_bookmaker(df_test)
+
+        # Step 10 : probabilistic evaluation
+    print("▶ Step 10: probabilistic model vs bookmaker evaluation")
+    probabilistic_evaluation()
 
 
 
