@@ -28,7 +28,7 @@ from src.models import train_models
 
 from src.bookmaker_baseline import evaluate_bookmaker
 
-from src.probabilistic_evaluation import main as probabilistic_evaluation
+from src.probabilistic_evaluation import run_probabilistic_evaluation
 
 
 
@@ -116,8 +116,8 @@ def main():
     book_metrics = evaluate_bookmaker(df_test)
 
         # Step 10 : probabilistic evaluation
-    print("▶ Step 10: probabilistic model vs bookmaker evaluation")
-    probabilistic_evaluation()
+    print("\n▶ Step 10: probabilistic model vs bookmaker evaluation")
+    run_probabilistic_evaluation()
 
 
 
