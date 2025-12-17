@@ -1,0 +1,72 @@
+LOGISTIC REGRESSION COEFFICIENTS
+================================
+
+Class -1 vs others
+----------------------------------------
+diff_avg_points_L5                       +0.3027
+diff_avg_points_L10                      -0.1588
+diff_avg_goals_for_L5                    -0.0645
+diff_avg_goals_against_L5                -0.1063
+diff_clean_sheet_rate_L5                 +0.0057
+diff_avg_xg_for_L5                       -0.0754
+diff_avg_xg_against_L5                   +0.0136
+diff_avg_shots_on_target_for_L5          -0.0380
+diff_avg_shots_on_target_against_L5      +0.4542
+diff_avg_possession_L5                   -0.0616
+diff_avg_saves_L5                        -0.3308
+diff_avg_fouls_L5                        +0.0449
+diff_avg_yellow_cards_L5                 -0.0760
+diff_avg_blocks_L5                       +0.0010
+diff_avg_clearances_L5                   +0.1133
+diff_avg_points_home_L5                  -0.1357
+diff_avg_points_away_L5                  -0.1648
+diff_avg_goal_diff_L5                    +0.0208
+diff_avg_xg_diff_L5                      -0.0531
+diff_avg_discipline_L5                   +0.0141
+
+Class 0 vs others
+----------------------------------------
+diff_avg_points_L5                       -0.1035
+diff_avg_points_L10                      +0.1211
+diff_avg_goals_for_L5                    +0.0299
+diff_avg_goals_against_L5                +0.0030
+diff_clean_sheet_rate_L5                 +0.0060
+diff_avg_xg_for_L5                       -0.0363
+diff_avg_xg_against_L5                   -0.0194
+diff_avg_shots_on_target_for_L5          -0.0303
+diff_avg_shots_on_target_against_L5      +0.0355
+diff_avg_possession_L5                   -0.1140
+diff_avg_saves_L5                        +0.0387
+diff_avg_fouls_L5                        -0.0249
+diff_avg_yellow_cards_L5                 +0.0466
+diff_avg_blocks_L5                       +0.0008
+diff_avg_clearances_L5                   -0.0523
+diff_avg_points_home_L5                  +0.0038
+diff_avg_points_away_L5                  +0.0252
+diff_avg_goal_diff_L5                    +0.0176
+diff_avg_xg_diff_L5                      -0.0107
+diff_avg_discipline_L5                   -0.0065
+
+Class 1 vs others
+----------------------------------------
+diff_avg_points_L5                       -0.1992
+diff_avg_points_L10                      +0.0377
+diff_avg_goals_for_L5                    +0.0346
+diff_avg_goals_against_L5                +0.1034
+diff_clean_sheet_rate_L5                 -0.0117
+diff_avg_xg_for_L5                       +0.1116
+diff_avg_xg_against_L5                   +0.0058
+diff_avg_shots_on_target_for_L5          +0.0683
+diff_avg_shots_on_target_against_L5      -0.4897
+diff_avg_possession_L5                   +0.1756
+diff_avg_saves_L5                        +0.2921
+diff_avg_fouls_L5                        -0.0200
+diff_avg_yellow_cards_L5                 +0.0294
+diff_avg_blocks_L5                       -0.0018
+diff_avg_clearances_L5                   -0.0610
+diff_avg_points_home_L5                  +0.1319
+diff_avg_points_away_L5                  +0.1397
+diff_avg_goal_diff_L5                    -0.0384
+diff_avg_xg_diff_L5                      +0.0638
+diff_avg_discipline_L5                   -0.0077
+
