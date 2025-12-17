@@ -205,7 +205,6 @@ def test_accuracy_above_random_baseline():
     model.fit(X_train, y_train)
     acc = model.score(X_test, y_test)
 
-    # Better than random guessing (~33%)
     assert acc > 0.33
 
 
