@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from pathlib import Path
 
 from sklearn.linear_model import LogisticRegression
@@ -8,9 +7,7 @@ from sklearn.pipeline import Pipeline
 
 
 def bookmaker_probabilities(row):
-    """
-    Probabilités implicites bookmaker pour UN match.
-    """
+    """Probabilités implicites bookmaker pour UN match."""
     p_home = 1 / row["odds_win"]
     p_draw = 1 / row["odds_draw"]
     p_away = 1 / row["odds_lose"]
@@ -25,15 +22,14 @@ def bookmaker_probabilities(row):
 
 
 def decode_result(target):
-    """
-    Transforme la variable cible en label lisible.
-    """
+    """Transforme la variable cible en label lisible."""
     if target == 1:
         return "Home win"
     elif target == 0:
         return "Draw"
     else:
         return "Away win"
+
 
 def model_beats_bookmaker(row):
     """
@@ -48,13 +44,25 @@ def model_beats_bookmaker(row):
         return row["model_away_win"] > row["book_away"]
 
 
+def run_probabilistic_evaluation(
+    data_path: Path | str = "data/processed/model_data.csv",
+    output_path: Path | str = "results/match_probabilities_comparison.csv",
+    sample_n: int = 5,
+    verbose: bool = True,
+):
+    """
+    Lance l'évaluation probabiliste (modèle vs bookmaker) et sauvegarde le CSV final.
 
-def main():
+    Retourne:
+      - df_final (DataFrame)
+      - summary (dict) avec n_total, n_wins, win_rate
+    """
+    data_path = Path(data_path)
+    output_path = Path(output_path)
 
-    DATA_PATH = Path("data/processed/model_data.csv")
-
-    print("📥 Loading dataset...")
-    df = pd.read_csv(DATA_PATH)
+    if verbose:
+        print("📥 Loading dataset...")
+    df = pd.read_csv(data_path)
 
     df["match_date"] = pd.to_datetime(df["match_date"])
     df = df.sort_values("match_date").reset_index(drop=True)
@@ -69,7 +77,7 @@ def main():
     split_idx = int(len(df) * 0.8)
 
     X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
-    y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+    y_train, _ = y.iloc[:split_idx], y.iloc[split_idx:]
 
     df_test = df.iloc[split_idx:].reset_index(drop=True)
 
@@ -85,7 +93,8 @@ def main():
         ))
     ])
 
-    print("⚙️ Training model...")
+    if verbose:
+        print("⚙️ Training model...")
     model.fit(X_train, y_train)
 
     # -----------------------------
@@ -107,24 +116,24 @@ def main():
     # -----------------------------
     # Affichage lisible (avec résultat réel)
     # -----------------------------
-    print("\n🔮 Sample match predictions:\n")
+    if verbose:
+        print("\n🔮 Sample match predictions:\n")
+        for _, row in df_test.head(sample_n).iterrows():
+            real_result = decode_result(row["target"])
 
-    for _, row in df_test.head(5).iterrows():
-        real_result = decode_result(row["target"])
-
-        print(f"Match: {row['match_id']}")
-        print(f"Real result → {real_result}")
-        print(
-            f"Model → Home: {row['model_home_win']*100:.1f}% | "
-            f"Draw: {row['model_draw']*100:.1f}% | "
-            f"Away: {row['model_away_win']*100:.1f}%"
-        )
-        print(
-            f"Book  → Home: {row['book_home']*100:.1f}% | "
-            f"Draw: {row['book_draw']*100:.1f}% | "
-            f"Away: {row['book_away']*100:.1f}%"
-        )
-        print("-" * 55)
+            print(f"Match: {row['match_id']}")
+            print(f"Real result → {real_result}")
+            print(
+                f"Model → Home: {row['model_home_win']*100:.1f}% | "
+                f"Draw: {row['model_draw']*100:.1f}% | "
+                f"Away: {row['model_away_win']*100:.1f}%"
+            )
+            print(
+                f"Book  → Home: {row['book_home']*100:.1f}% | "
+                f"Draw: {row['book_draw']*100:.1f}% | "
+                f"Away: {row['book_away']*100:.1f}%"
+            )
+            print("-" * 55)
 
     # -----------------------------
     # Sauvegarde FINALE (sans features)
@@ -149,28 +158,33 @@ def main():
     # -----------------------------
     # Model vs Bookmaker comparison
     # -----------------------------
-    df_final["model_beats_bookmaker"] = df_test.apply(
-        model_beats_bookmaker, axis=1
-    )
+    df_final["model_beats_bookmaker"] = df_test.apply(model_beats_bookmaker, axis=1)
 
     n_total = len(df_final)
-    n_wins = df_final["model_beats_bookmaker"].sum()
+    n_wins = int(df_final["model_beats_bookmaker"].sum())
+    win_rate = (n_wins / n_total) if n_total else 0.0
 
-    print("\n📊 Model vs Bookmaker (probabilistic comparison)")
-    print(
-        f"Model assigns higher probability than bookmaker on "
-        f"{n_wins} / {n_total} matches "
-        f"({100 * n_wins / n_total:.1f}%)"
-    )
+    if verbose:
+        print("\n📊 Model vs Bookmaker (probabilistic comparison)")
+        print(
+            f"Model assigns higher probability than bookmaker on "
+            f"{n_wins} / {n_total} matches "
+            f"({100 * win_rate:.1f}%)"
+        )
 
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df_final.to_csv(output_path, index=False)
 
-    OUTPUT_PATH = Path("results/match_probabilities_comparison.csv")
-    df_final.to_csv(OUTPUT_PATH, index=False)
-    print("\n✅ Saved:", OUTPUT_PATH)
+    if verbose:
+        print("\n✅ Saved:", output_path)
+
+    summary = {"n_total": n_total, "n_wins": n_wins, "win_rate": win_rate}
+    return df_final, summary
 
 
 if __name__ == "__main__":
-    main()
+    run_probabilistic_evaluation()
+
 
 
 
