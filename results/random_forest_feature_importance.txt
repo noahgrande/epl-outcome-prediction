@@ -1,0 +1,25 @@
+RANDOM FOREST FEATURE IMPORTANCE
+================================
+
+Feature                              Importance
+-----------------------------------------------
+diff_avg_possession_L5              0.0843
+diff_avg_xg_diff_L5                 0.0836
+diff_avg_xg_for_L5                  0.0696
+diff_avg_clearances_L5              0.0644
+diff_avg_xg_against_L5              0.0579
+diff_avg_points_L10                 0.0572
+diff_avg_shots_on_target_for_L5     0.0560
+diff_avg_goal_diff_L5               0.0501
+diff_avg_blocks_L5                  0.0478
+diff_avg_fouls_L5                   0.0463
+diff_avg_shots_on_target_against_L5 0.0457
+diff_avg_points_L5                  0.0450
+diff_avg_points_home_L5             0.0440
+diff_avg_discipline_L5              0.0440
+diff_avg_points_away_L5             0.0391
+diff_avg_saves_L5                   0.0390
+diff_avg_goals_against_L5           0.0361
+diff_avg_goals_for_L5               0.0355
+diff_avg_yellow_cards_L5            0.0343
+diff_clean_sheet_rate_L5            0.0199
