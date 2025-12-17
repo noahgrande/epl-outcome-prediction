@@ -4,11 +4,11 @@ import pandas as pd
 
 
 # ======================================================
-# build_matchdata_base.py (COPIÉ SANS MODIFIER LA LOGIQUE)
+# build_matchdata_base.py
 # ======================================================
 
-RAW_FILE = "data/raw/matchdata_21-25.csv"
-OUT_FILE = "data/processed/matchdata_base.csv"
+RAW_FILE_MATCHDATA = "data/raw/matchdata_21-25.csv"
+OUT_FILE_MATCHDATA = "data/processed/matchdata_base.csv"
 
 
 team_name_normalization = {
@@ -74,13 +74,7 @@ def normalize_team(x):
     return team_name_normalization.get(x, x)
 
 def normalize_formation(f):
-    """
-    Standardise any formation coming from fbref weird formats:
-    - '3/5/2002' → '3-5-2'
-    - '4/4/2002' → '4-4-2'
-    - '4/3/2003' → '4-3-3'
-    - keeps '4-2-3-1' unchanged
-    """
+
     if pd.isna(f):
         return f
 
@@ -103,26 +97,16 @@ def normalize_formation(f):
     return "-".join(nums[:3])
 
 def norm_referee(x):
-    """
-    Standardise les noms d'arbitres pour correspondre à matchdata_clean :
-    - enlève les initiales seules ("M Oliver" → "Michael Oliver")
-    - supprime les points ("J. Moss" → "J Moss")
-    - garde toujours format Title Case
-    - remplace abréviations connues
-    """
-
+    
     if pd.isna(x):
         return x
 
     x = str(x).strip()
-
-    # enlever les points
+ 
     x = x.replace(".", "").strip()
 
-    # mettre en Title Case (ex: "m oliver" -> "M Oliver")
     x = x.title()
 
-    # mapping arbitres EPL (corrige les initiales vers noms complets)
     ref_map = {
         "M Oliver": "Michael Oliver",
         "P Tierney": "Paul Tierney",
@@ -202,7 +186,7 @@ column_rename = {
     "opp_formation": "opponent_formation",
 }
 
-USEFUL_COLS = [
+useful_cols = [
     "team", "season", "match_date", "matchweek", "competition", "venue",
     "opponent", "referee",
 
@@ -235,7 +219,7 @@ USEFUL_COLS = [
 ]
 
 def load_raw():
-    df = pd.read_csv(RAW_FILE)
+    df = pd.read_csv(RAW_FILE_MATCHDATA)
 
     df.columns = (
         df.columns.str.lower()
@@ -263,7 +247,7 @@ def load_raw():
 
     df["matchweek_num"] = df["matchweek"].str.extract(r"(\d+)").astype(int)
 
-    keep = [c for c in USEFUL_COLS if c in df.columns]
+    keep = [c for c in useful_cols if c in df.columns]
     df = df[keep + ["matchweek_num"]]
 
     df = df.sort_values(["season", "matchweek_num", "team", "match_date"])
@@ -291,13 +275,11 @@ def prepare_home_away(df):
     home = df[df["is_home"]].copy()
     away = df[~df["is_home"]].copy()
 
-    # NEW: match_id aligned with all_matches_clean
     def make_match_id(row, is_home):
         date = str(row["match_date"].date())
         home_team = row["team"] if is_home else row["opponent"]
         away_team = row["opponent"] if is_home else row["team"]
 
-        # normalize team names exactly like all_matches_clean
         def norm_team(t):
             return (
                 str(t)
@@ -332,9 +314,6 @@ def pivot_matches(home, away):
 
     out = pd.DataFrame()
 
-    # -----------------------
-    # IDENTITY FIELDS
-    # -----------------------
     out["match_id"] = merged["match_id"]
     out["match_date"] = merged["match_date_home"]
     out["season"] = merged["season_home"]
@@ -342,22 +321,13 @@ def pivot_matches(home, away):
     out["matchweek_num"] = merged["matchweek_num_home"]
     out["referee"] = merged["referee_home"]
 
-    # -----------------------
-    # TEAMS
-    # -----------------------
     out["home_team"] = merged["team_home"]
     out["away_team"] = merged["team_away"]
 
-    # -----------------------
-    # GOALS & RESULT
-    # -----------------------
     out["home_goals"] = merged["goals_for_home"]
     out["away_goals"] = merged["goals_for_away"]
     out["goal_difference"] = merged["goals_for_home"] - merged["goals_for_away"]
 
-    # -----------------------
-    # LIST OF METRICS TO PIVOT
-    # -----------------------
     metrics = [
         "xg", "non_penalty_xg", "xg_against", "post_shot_xg",
         "goals_minus_xg", "post_shot_xg_diff",
@@ -396,16 +366,13 @@ def pivot_matches(home, away):
     return out
 
 # --------------------------------------------------------
-#build_all_matches_clean.py
+# BUILD_ALL_MATCHES_CLEAN.PY
 # --------------------------------------------------------
 
 RAW_DIR = "data/raw"
 OUT_FILE = "data/processed/all_matches_clean.csv"
 
-# ===========================================
-# COLUMNS TO KEEP + RENAME
-# ===========================================
-COLUMN_MAP = {
+column_map = {
     "Date": "match_date",
     "HomeTeam": "home_team",
     "AwayTeam": "away_team",
@@ -426,7 +393,6 @@ COLUMN_MAP = {
     "HR": "home_red_cards",
     "AR": "away_red_cards",
 
-    # bookmaker odds
     "B365H": "odds_b365_home_win",
     "B365D": "odds_b365_draw",
     "B365A": "odds_b365_away_win",
@@ -451,33 +417,25 @@ COLUMN_MAP = {
     "Avg<2.5": "odds_avg_under25",
 }
 
-KEEP_COLS = list(COLUMN_MAP.keys())
+keep_cols = list(column_map.keys())
 
-# ===========================================
-# LOAD & CLEAN ONE SEASON
-# ===========================================
+    
 def load_file(path):
     df = pd.read_csv(path)
 
-    # keep only useful columns
-    df = df[[c for c in KEEP_COLS if c in df.columns]].copy()
+    df = df[[c for c in keep_cols if c in df.columns]].copy()
 
-    # rename
-    df = df.rename(columns=COLUMN_MAP)
-
-    # parse date
+    df = df.rename(columns=column_map)
+    
     df["match_date"] = pd.to_datetime(df["match_date"], format="%d/%m/%Y", errors="coerce")
-
-    # normalize teams & refs
+    
     df["home_team"] = df["home_team"].apply(normalize_team)
     df["away_team"] = df["away_team"].apply(normalize_team)
     df["referee"] = df["referee"].apply(norm_referee)
 
     return df
 
-# ===========================================
-# MAIN BUILD
-# ===========================================
+
 def build_match_id(row):
     return (
         f"{row['match_date'].strftime('%Y-%m-%d')}_"
@@ -492,7 +450,6 @@ def build_all():
     dfs = [load_file(f) for f in files]
     df = pd.concat(dfs, ignore_index=True)
 
-    # stop at last known FBRef match (Matchweek 23, 2025-01-26)
     df = df[df["match_date"] <= pd.to_datetime("2025-01-26")]
     df["match_id"] = df.apply(build_match_id, axis=1)
     return df
@@ -500,7 +457,7 @@ def build_all():
 
 
 # ======================================================
-# merge_dataset.py (LOGIQUE IDENTIQUE, EN FONCTION)
+# MERGE_DATASET.PY
 # ======================================================
 
 MATCHDATA_FILE = "data/processed/matchdata_clean.csv"
@@ -531,7 +488,7 @@ def merge_dataset(matchdata: pd.DataFrame, allm: pd.DataFrame) -> pd.DataFrame:
 
 
 # ======================================================
-# build_data_before_eng.py (COPIÉ SANS MODIFIER LA LOGIQUE)
+# BUILD_DATA_BEFORE_ENG.PY
 # ======================================================
 
 def build_data_before_engineering(df: pd.DataFrame) -> pd.DataFrame:
@@ -630,7 +587,7 @@ def build_data_before_engineering(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ======================================================
-# build_data_after_eng.py (COPIÉ SANS MODIFIER LA LOGIQUE)
+# BUILD_DATA_AFTER_ENG.PY
 # ======================================================
 
 def build_team_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -708,7 +665,7 @@ def build_team_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ======================================================
-# build_match_level_features.py (COPIÉ SANS MODIFIER LA LOGIQUE)
+# BUILD_MODEL_DATASET.PY
 # ======================================================
 
 def build_match_level_features(df: pd.DataFrame) -> pd.DataFrame:
