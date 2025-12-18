@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 RESULTS_PATH = Path("results/match_probabilities_comparison.csv")
 
+VIS_PATH = Path("results/visualisation")
+VIS_PATH.mkdir(parents=True, exist_ok=True)
+
 
 def load_results():
     if not RESULTS_PATH.exists():
@@ -94,6 +97,11 @@ def plot_result_distribution_when_model_wins(df):
     plt.title("Result distribution when model > bookmaker")
     plt.tight_layout()
     plt.show()
+    plt.savefig(
+        VIS_PATH/ "result_distribution_when_model_beats_bookmaker.png",
+        bbox_inches="tight"
+    )
+    plt.close()
 
 def plot_model_advantage_by_result(df):
     results = {}
@@ -107,7 +115,10 @@ def plot_model_advantage_by_result(df):
     plt.ylabel("Percentage (%)")
     plt.title("Model advantage by real outcome")
     plt.tight_layout()
-    plt.show()
+    plt.savefig(
+        VIS_PATH / "model_advantage_by_real_outcome.png",
+        bbox_inches="tight"
+    )
 
 def plot_probability_difference_distribution(df):
 
@@ -128,7 +139,10 @@ def plot_probability_difference_distribution(df):
     plt.ylabel("Number of matches")
     plt.title("Distribution of probability differences")
     plt.tight_layout()
-    plt.show()
+    plt.savefig(
+        VIS_PATH / "probability_difference_distribution.png",
+        bbox_inches="tight"
+    )
 
 
 
