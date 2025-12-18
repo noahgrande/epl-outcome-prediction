@@ -67,9 +67,23 @@ def main():
     print("▶ Step 5: team-level table")
     df_before = build_data_before_engineering(df_merged)
 
+    df_before.to_csv(
+        "data/processed/data_before_engineering.csv",
+        index=False
+    )
+    print("data_before_engineering.csv done")
+
+
 
     print("▶ Step 6: rolling features")
     df_after = build_team_rolling_features(df_before)
+
+    df_after.to_csv(
+        "data/processed/data_after_engineering.csv",
+        index=False
+    )
+    print("data_after_engineering.csv done")
+
 
 
     print("▶ Step 7: final ML dataset")
