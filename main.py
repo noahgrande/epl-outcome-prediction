@@ -14,8 +14,6 @@ from src.data_loader import (
 )
 from src.models import train_models
 
-from src.feature_analysis import plot_feature_correlation
-
 from src.bookmaker_baseline import evaluate_bookmaker
 
 from src.probabilistic_evaluation import run_probabilistic_evaluation
@@ -93,19 +91,6 @@ def main():
     df_model.to_csv("data/processed/model_data.csv", index=False)
     print("model_data.csv done")
 
-    print("Feature correlation analysis")
-
-    feature_cols = [c for c in df_model.columns if c.startswith("diff_")]
-
-    plot_feature_correlation(
-        df_model,
-        feature_cols,
-        save_path="results/feature_correlation.png"
-    )
-
-    print("feature_correlation.png saved")
-
-
 
     print("▶ Step 8: training ML models")
 
@@ -124,6 +109,7 @@ def main():
 
     print("\n▶ Step 9: bookmaker baseline evaluation")
     book_metrics = evaluate_bookmaker(df_test)
+    metrics["bookmaker"] = book_metrics
 
 
     print("\n▶ Step 10: probabilistic model vs bookmaker evaluation")
