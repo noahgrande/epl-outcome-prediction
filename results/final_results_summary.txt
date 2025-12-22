@@ -1,0 +1,17 @@
+==============================
+FINAL RESULTS SUMMARY
+==============================
+
+ log_reg
+   accuracy: 0.5370
+   log_loss: 0.9988
+   classes: [see detailed report]
+
+ rf
+   accuracy: 0.5292
+   log_loss: 0.9984
+   classes: [see detailed report]
+
+ bookmaker
+   accuracy: 0.5409
+   log_loss: 0.9561
