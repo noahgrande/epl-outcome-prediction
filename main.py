@@ -115,17 +115,28 @@ def main():
     print("\n▶ Step 10: probabilistic model vs bookmaker evaluation")
     run_probabilistic_evaluation()
 
-    print("\n==============================")
-    print("FINAL RESULTS SUMMARY")
-    print("==============================")
+    summary_text = (
+        "==============================\n"
+        "FINAL RESULTS SUMMARY\n"
+        "==============================\n\n"
+        f" log_reg\n"
+        f"   accuracy: {metrics['log_reg']['accuracy']:.4f}\n"
+        f"   log_loss: {metrics['log_reg']['log_loss']:.4f}\n"
+        f"   classes: [see detailed report]\n\n"
+        f" rf\n"
+        f"   accuracy: {metrics['rf']['accuracy']:.4f}\n"
+        f"   log_loss: {metrics['rf']['log_loss']:.4f}\n"
+        f"   classes: [see detailed report]\n\n"
+        f" bookmaker\n"
+        f"   accuracy: {book_metrics['accuracy']:.4f}\n"
+        f"   log_loss: {book_metrics['log_loss']:.4f}\n"
+    )
 
-    for model_name, model_metrics in metrics.items():
-        print(f"\n {model_name}")
-        for k, v in model_metrics.items():
-            if isinstance(v, (int, float)):
-                print(f"   {k}: {v:.4f}")
-            else:
-                print(f"   {k}: [see detailed report]")
+    print(summary_text)
+
+    Path("results").mkdir(parents=True, exist_ok=True)
+    with open("results/final_results_summary.txt", "w", encoding="utf-8") as f:
+        f.write(summary_text)
 
 
 
