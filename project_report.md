@@ -33,25 +33,50 @@ Crucially, as explained earlier, the dataset also includes bookmaker odds as mar
 # 3.2 Approach
 
 This project adopts a supervised machine learning approach to predict football match outcomes. The task is formulated as a multiclass classification problem with three possible outcomes: home win, draw, and away win. This formulation is standard in the football prediction literature and reflects the natural structure of match results (3, 5).
+
 Algorithms
+
 Two classification models are employed in this study: logistic regression and random forest. Logistic regression is used as a baseline machine learning model due to its simplicity, interpretability, and ability to produce well-calibrated probabilistic outputs. Its linear structure provides a transparent reference point and facilitates comparison with more flexible models.
 Random forest is selected as a representative ensemble method based on decision trees. By aggregating predictions from multiple trees, the model is able to capture nonlinear relationships and complex interactions between features while remaining robust to noise and outliers (8, 9, 15). This makes random forest particularly suitable for heterogeneous football performance data composed of tactical, statistical, and market-based features.
 Bookmaker odds are not used as the sole predictive objective and are not included as input features in the machine learning models. They are used separately as an external benchmark for comparison with model-predicted probabilities. Model predictions are explicitly compared against bookmaker-implied probabilities in order to contextualize model performance relative to market expectations (12, 13).
+
 Preprocessing
-Data preprocessing consists of several steps applied uniformly across models. Observations with missing values are removed to ensure a consistent feature set. All features are computed using information available prior to match kickoff to prevent data leakage. For logistic regression, numerical features are standardized to zero mean and unit variance to improve numerical stability and model convergence. For random forest, features are left unscaled, as tree-based models are invariant to monotonic transformations. No explicit outlier removal is performed, as ensemble tree models are generally robust to extreme values. Feature selection is guided by domain knowledge and correlation-based considerations in order to reduce redundancy and limit overfitting, following standard feature engineering practices in machine learning (18, 19).
+
+Data preprocessing consists of several steps applied uniformly across models. Observations with missing values are removed to ensure a consistent feature set. Rolling features were created to ensure models use only information available prior to kick-off. They were constructed in this manner:
+
+```python 
+df["avg_points_L5"] = g["points"].shift(1).rolling(5, min_periods=1).mean()
+```
+
+this example from the build_rolling_features function shows the arcitecture of the rolling features. It is a mean of the last five games, starting after the first game and if the numer of matche <5, taking the number of matches before to make the mean and also banning the actual match. This function allows the model to use only information available prior the match. The model uses data available in the file model_data and that is differences between home and away team. These features are created in this boucle:
+
+```python 
+for c in feature_cols:
+out[f"diff_{c}"] = (
+merged[f"{c}_home"] - merged[f"{c}_away"]
+)
+```
+
+This boucle is taking the value from home and from away team and create a difference from all rolling features. Differences are mainly used in studies and are highly significant to predict match outcomes.
+For logistic regression, numerical features are standardized to zero mean and unit variance to improve numerical stability and model convergence. For random forest, features are left unscaled, as tree-based models are invariant to monotonic transformations. No explicit outlier removal is performed, as ensemble tree models are generally robust to extreme values. Feature selection is guided by domain knowledge and correlation-based considerations (see tables in the code) in order to reduce redundancy and limit overfitting, following standard feature engineering practices in machine learning (18, 19).
+
 Model Architecture
+
 The logistic regression model is used to estimate the probability of each possible match outcome: home win, draw, or away win. For every match, the model outputs a probability for each class and predicts the outcome with the highest probability. Regularization is applied to prevent the model from overfitting the training data and to improve its ability to generalize to unseen matches. The random forest model is an ensemble method composed of many decision trees trained on different subsets of the data. Each tree learns simple decision rules based on a random selection of features, which introduces diversity among the trees. The final prediction is obtained by averaging the probabilities produced by all trees, resulting in a more stable and robust prediction.
 Both models are implemented using the scikit-learn library, which provides a consistent framework for model training, probability estimation, and evaluation. This ensures a fair comparison between models and facilitates reproducibility of the results.
+
 Evaluation Metrics
+
 Model performance is evaluated using both accuracy and probabilistic metrics. Accuracy gives a general indication of how often the model predicts the correct outcome, but it is not sufficient on its own because match outcomes are imbalanced, with draws occurring less frequently than wins or losses. For this reason, additional evaluation focuses on the predicted probabilities. Metrics such as log loss are used to measure how well the predicted probabilities reflect the true match outcomes. This is particularly relevant when comparing model predictions to bookmaker-implied probabilities, which are also expressed in probabilistic terms (6).
 Performance is analysed both overall and for each outcome class separately. Special attention is given to the draw class, which is know to be challenging to predict and represents a limitation in football match prediction models (5, 10).
 
 # 3.3 Implementation
 
 The project is implemented entirely in Python, using standard data science libraries. Data manipulation and preprocessing are handled with pandas and numpy. Machine learning models are implemented using the scikit-learn library, which provides a unified interface for model training, probability estimation, and evaluation. Model persistence is managed with joblib, allowing trained models to be saved and reused in a consistent manner.
-The overall system architecture follows a modular and reproducible pipeline design. Raw match data are first loaded and sorted chronologically to prevent information leakage. Relevant features are selected and validated to avoid redundance, after which the dataset is split chronogically into training and test sets (80/20) to avoid data leakage. Machine learning models are trained on the training set, evaluated on the test set, and stored together with evaluation outputs and metadata.
-Key components of the implementation include scripts responsible for data loading, feature selection, model training, evaluation, and result storage. Logistic regression is implemented using a pipeline that combines feature standardization and model fitting, ensuring that preprocessing steps are applied consistently. Random forest models are trained without feature scaling and provide feature importance scores that support model interpretation.
+The overall system architecture follows a modular and reproducible pipeline design. Raw match data are first loaded and sorted chronologically to prevent information leakage. Relevant features are selected and validated to avoid redundance, after which the dataset is split chronologically into training and test sets (80/20) to avoid data leakage. Machine learning models are trained on the training set, evaluated on the test set, and stored together with evaluation outputs and metadata.
+Main part of the project is the treatment of data including loading, standardizing, merging, feature selection and rolling features creation. Other key components of the implementation include scripts responsible for model training, evaluation, and result storage. Logistic regression is implemented using a pipeline that combines feature standardization and model fitting, ensuring that preprocessing steps are applied consistently. Random forest models are trained without feature scaling and provide feature importance scores that support model interpretation.
 For each model, classification reports, confusion matrices, and probabilistic evaluation metrics are generated and saved to disk. Trained models and the list of features used during training are also stored, ensuring reproducibility and consistency between training and prediction phases. This implementation strategy follows the software engineering and reproducibility principles emphasized in the course.
+
 
 ## 4. Results
 
@@ -60,24 +85,66 @@ For each model, classification reports, confusion matrices, and probabilistic ev
 All experiments were conducted on a standard personal computer using a CPU-based environment. No GPU acceleration was used, as the models considered in this project (logistic regression and random forest) are not computationally demanding and are well suited to CPU execution.
 The implementation was carried out in Python, using widely adopted data science libraries, including pandas for data manipulation and scikit-learn for model training, preprocessing, and evaluation. Model training and evaluation were fully reproducible and executed locally.
 The dataset was split chronologically into training and testing subsets in order to respect the temporal structure of football match data and avoid information leakage. Approximately 80% of the observations (1,027 matches) were used for training, while the remaining 20% (257 matches) were reserved for out-of-sample testing.
-For logistic regression, a multinomial formulation was used together with feature standardization via a StandardScaler. Model training relied on the LBFGS optimizer with an increased maximum number of iterations to ensure convergence. The random forest model was trained using 300 decision trees, with a minimum number of samples per leaf set to reduce overfitting. Default impurity-based splitting criteria were used.
-No cross-validation or extensive hyperparameter tuning was performed, as the primary objective of the project is comparative and methodological rather than performance optimization.
 
-```python
-LogisticRegression(
-    solver="lbfgs",
-    max_iter=2000
-)
-
-RandomForestClassifier(
-    n_estimators=300,
-    min_samples_leaf=5
-)
-```
 ```python
 df = df.sort_values("match_date")
 split_idx = int(len(x) * 0.8)
 ```
+
+For logistic regression, a multinomial formulation was used together with feature standardization via a StandardScaler. Model training relied on the LBFGS optimizer with an increased maximum number of iterations to ensure convergence. 
+
+```python
+log_reg = Pipeline([
+    ("scaler", StandardScaler()),
+    ("clf", LogisticRegression(
+        solver="lbfgs",
+        max_iter=2000,
+        random_state=42
+    ))
+])
+```
+
+The random forest model was trained using 300 decision trees, with a minimum number of samples per leaf set to reduce overfitting. Default impurity-based splitting criteria were used.
+
+```python
+rf = RandomForestClassifier(
+    n_estimators=300,
+    min_samples_leaf=5,
+    random_state=42,
+    n_jobs=-1
+)
+```
+
+No cross-validation or extensive hyperparameter tuning was performed, as the primary objective of the project is comparative and methodological rather than performance optimization.
+
+# 4.2 Performance Evaluation
+
+Model performance was evaluated using both classification accuracy and probabilistic metrics. In addition to the machine learning models, bookmaker-implied probabilities were included as a baseline benchmark.
+
+Table 1 summarizes the main results on the test set.
+
+                     Accuracy  Log-loss
+Logistic Regression    0.5370    0.9988
+Random Forest          0.5292    0.9984
+Bookmaker Baseline     0.5474    0.9438
+Table 1: Predictive performance comparison on the test set
+
+All three approaches achieve very similar performance, with results slightly abose 53% of accuracy. The bookmaker baseline marginally outperforms both machine learning models in terms of accuracy and log loss, confirming its role as a strong reference point.
+Class-level evaluation reveals a systematic difficulty in predicting draw outcomes. Both machine learning models almost never predict the draw class correctly, a limitation that is also observed in the bookmaker baseline. In contrast, home wins and away wins are predicted with substantially higher recall, especially for home wins.
+These results highlight the inherent class imbalance of football match outcomes and confirm findings reported in prior literature regarding the difficulty of draw prediction.
+
+# 4.3 Visualizations and Qualitative Analysis
+
+Confusion matrices were used to analyze prediction errors for each model. They show that misclassifications predominantly occur between home wins and away wins, while draw outcomes are frequently misclassified as one of the two win categories.
+Feature importance analysis from the random forest model indicates that relative performance indicators—such as differences in recent points, expected goals, and defensive metrics—are among the most influential predictors. This supports the modeling choice of using difference-based features rather than absolute team statistics.
+Beyond aggregate metrics, a probabilistic comparison between the logistic regression model and bookmaker probabilities was conducted. The model assigned a higher probability to the realized outcome than the bookmaker in 99 out of 257 matches (38.5%). This suggests that, while the model does not outperform bookmakers overall, it captures complementary information in a non-negligible subset of matches.
+Sample match-level probability outputs further illustrate that the model often produces more balanced probability distributions, whereas bookmaker probabilities tend to be more concentrated on a single outcome.
+
+
+
+
+
+
 
 
 
