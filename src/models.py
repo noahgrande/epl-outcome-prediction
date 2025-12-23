@@ -47,7 +47,7 @@ def train_models(df: pd.DataFrame):
     feature_names = x.columns.tolist()
     classes = log_reg.named_steps["clf"].classes_
 
-    summary_path = Path("results/logistic_regression_summary.txt")
+    summary_path = Path("results/logistic_regression_coefficients.txt")
     summary_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(summary_path, "w") as f:
@@ -63,15 +63,18 @@ def train_models(df: pd.DataFrame):
 
             f.write("\n")
 
-    print("Logistic regression summary saved to results/logistic_regression_summary.txt")
+    print("Logistic regression summary saved to results/logistic_regression_coefficient.txt")
 
     y_pred_log = log_reg.predict(x_test)
     y_proba_log = log_reg.predict_proba(x_test)
 
-    print("\n Logistic Regression")
-    print("Accuracy:", accuracy_score(y_test, y_pred_log))
-    print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_log))
-    print(classification_report(y_test, y_pred_log, zero_division=0))
+    log_accuracy = accuracy_score(y_test, y_pred_log)
+    log_cm = confusion_matrix(y_test, y_pred_log)
+    log_ll = log_loss(
+        y_test,
+        y_proba_log,
+        labels=log_reg.named_steps["clf"].classes_
+    )
 
     log_report = classification_report(
         y_test,
@@ -79,13 +82,29 @@ def train_models(df: pd.DataFrame):
         zero_division=0
     )
 
+    print("\n Logistic Regression")
+    print("Accuracy:", log_accuracy)
+    print("Log-loss:", log_ll)
+    print("Confusion matrix:\n", log_cm)
+    print(log_report)
+
     log_report_path = Path("results/logistic_regression_report.txt")
     log_report_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(log_report_path, "w") as f:
-        f.write("LOGISTIC REGRESSION - CLASSIFICATION REPORT\n")
-        f.write("==========================================\n\n")
+        f.write("LOGISTIC REGRESSION\n")
+        f.write("================================\n\n")
+
+        f.write(f"Accuracy: {log_accuracy}\n")
+        f.write(f"Log-loss: {log_ll}\n\n")
+
+        f.write("Confusion matrix:\n")
+        f.write(str(log_cm))
+        f.write("\n\n")
+
         f.write(log_report)
+        f.write("\n")
+        
 
     print("Logistic Regression report saved to results/logistic_regression_report.txt")
 
@@ -131,24 +150,43 @@ def train_models(df: pd.DataFrame):
     y_pred_rf = rf.predict(x_test)
     y_proba_rf = rf.predict_proba(x_test)
 
-    print("\n Random Forest")
-    print("Accuracy:", accuracy_score(y_test, y_pred_rf))
-    print("Confusion matrix:\n", confusion_matrix(y_test, y_pred_rf))
-    print(classification_report(y_test, y_pred_rf, zero_division=0))
-    
+    rf_accuracy = accuracy_score(y_test, y_pred_rf)
+    rf_cm = confusion_matrix(y_test, y_pred_rf)
+    rf_ll = log_loss(
+        y_test,
+        y_proba_rf,
+        labels=rf.classes_
+    )
+
     rf_report = classification_report(
         y_test,
         y_pred_rf,
         zero_division=0
     )
 
+    print("\n Random Forest")
+    print("Accuracy:", rf_accuracy)
+    print("Log-loss:", rf_ll)
+    print("Confusion matrix:\n", rf_cm)
+    print(rf_report)
+    
     rf_report_path = Path("results/random_forest_report.txt")
     rf_report_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(rf_report_path, "w") as f:
-        f.write("RANDOM FOREST - CLASSIFICATION REPORT\n")
-        f.write("=====================================\n\n")
+
+        f.write("RANDOM FOREST\n")
+        f.write("================================\n\n")
+
+        f.write(f"Accuracy: {rf_accuracy}\n")
+        f.write(f"Log-loss: {rf_ll}\n\n")
+
+        f.write("Confusion matrix:\n")
+        f.write(str(rf_cm))
+        f.write("\n\n")
+
         f.write(rf_report)
+        f.write("\n")
 
     print("Random Forest report saved to results/random_forest_report.txt")
 
