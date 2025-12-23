@@ -1,5 +1,13 @@
-RANDOM FOREST - CLASSIFICATION REPORT
-=====================================
+RANDOM FOREST
+================================
+
+Accuracy: 0.5291828793774319
+Log-loss: 0.9984001058618337
+
+Confusion matrix:
+[[50  0 39]
+ [19  0 47]
+ [16  0 86]]
 
               precision    recall  f1-score   support
 
@@ -10,3 +18,4 @@ RANDOM FOREST - CLASSIFICATION REPORT
     accuracy                           0.53       257
    macro avg       0.36      0.47      0.40       257
 weighted avg       0.40      0.53      0.45       257
+
