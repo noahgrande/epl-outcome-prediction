@@ -264,11 +264,9 @@ def load_base():
     df["match_date"] = pd.to_datetime(df["match_date"])
     return df
 
-
-# --------------------------------------------------------
-# BUILD HOME / AWAY VIEWS
-# --------------------------------------------------------
+    
 def prepare_home_away(df):
+    
 
     df["is_home"] = df["venue"].str.lower().eq("home")
 
@@ -299,10 +297,7 @@ def prepare_home_away(df):
 
     return home, away
 
-
-# --------------------------------------------------------
-# PIVOT MATCHES INTO SINGLE ROW
-# --------------------------------------------------------
+    
 def pivot_matches(home, away):
 
     merged = home.merge(
@@ -453,9 +448,7 @@ def build_all():
     df = df[df["match_date"] <= pd.to_datetime("2025-01-26")]
     df["match_id"] = df.apply(build_match_id, axis=1)
     return df
-
-
-
+    
 # ======================================================
 # MERGE_DATASET.PY
 # ======================================================
@@ -485,8 +478,7 @@ def merge_dataset(matchdata: pd.DataFrame, allm: pd.DataFrame) -> pd.DataFrame:
     merged = matchdata.merge(allm, on="match_id", how="left")
 
     return merged
-
-
+    
 # ======================================================
 # BUILD_DATA_BEFORE_ENG.PY
 # ======================================================
