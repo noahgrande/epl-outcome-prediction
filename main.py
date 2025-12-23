@@ -12,9 +12,7 @@ from src.data_loader import (
     build_team_rolling_features,
     build_match_level_features,
 )
-from src.models import train_models
-
-from src.bookmaker_baseline import evaluate_bookmaker
+from src.models import evaluate_bookmaker, train_models
 
 from src.probabilistic_evaluation import run_probabilistic_evaluation
 
@@ -91,15 +89,19 @@ def main():
     df_model.to_csv("data/processed/model_data.csv", index=False)
     print("model_data.csv done")
 
+    print("\n▶ Step 8: bookmaker baseline evaluation")
+    split_idx = int(len(df_model) * 0.8)
+    df_test = df_model.iloc[split_idx:].reset_index(drop=True)
+    book_metrics = evaluate_bookmaker(df_test)
 
-    print("▶ Step 8: training ML models")
-
+    
+    print("\n▶ Step 9: training ML models")
 
     df_model["match_date"] = pd.to_datetime(df_model["match_date"])
     df_model = df_model.sort_values("match_date").reset_index(drop=True)
     df_model = df_model.dropna().reset_index(drop=True)
 
-    log_model, rf_model, metrics = train_models(df_model)
+    log_model, rf_model, metrics = train_models(df_model, book_metrics)
 
     Path("results").mkdir(exist_ok=True)
 
@@ -107,37 +109,8 @@ def main():
     df_test = df_model.iloc[split_idx:].reset_index(drop=True)
 
 
-    print("\n▶ Step 9: bookmaker baseline evaluation")
-    book_metrics = evaluate_bookmaker(df_test)
-    metrics["bookmaker"] = book_metrics
-
-
     print("\n▶ Step 10: probabilistic model vs bookmaker evaluation")
     run_probabilistic_evaluation()
-
-    summary_text = (
-        "==============================\n"
-        "FINAL RESULTS SUMMARY\n"
-        "==============================\n\n"
-        f" log_reg\n"
-        f"   accuracy: {metrics['log_reg']['accuracy']:.4f}\n"
-        f"   log_loss: {metrics['log_reg']['log_loss']:.4f}\n"
-        f"   classes: [see detailed report]\n\n"
-        f" rf\n"
-        f"   accuracy: {metrics['rf']['accuracy']:.4f}\n"
-        f"   log_loss: {metrics['rf']['log_loss']:.4f}\n"
-        f"   classes: [see detailed report]\n\n"
-        f" bookmaker\n"
-        f"   accuracy: {book_metrics['accuracy']:.4f}\n"
-        f"   log_loss: {book_metrics['log_loss']:.4f}\n"
-    )
-
-    print(summary_text)
-
-    Path("results").mkdir(parents=True, exist_ok=True)
-    with open("results/final_results_summary.txt", "w", encoding="utf-8") as f:
-        f.write(summary_text)
-
 
 
     print("PIPELINE FINISHED SUCCESSFULLY")
