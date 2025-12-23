@@ -9,8 +9,68 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
+def evaluate_bookmaker(df: pd.DataFrame):
 
-def train_models(df: pd.DataFrame):
+    required_cols = ["odds_win", "odds_draw", "odds_lose", "target"]
+    df = df.dropna(subset=required_cols).copy()
+
+    probs = 1 / df[["odds_win", "odds_draw", "odds_lose"]]
+    probs = probs.div(probs.sum(axis=1), axis=0)
+
+    probs.columns = ["book_home", "book_draw", "book_away"]
+
+    y_pred = probs.idxmax(axis=1).map({
+        "book_home": 1,
+        "book_draw": 0,
+        "book_away": -1,
+    })
+
+    y_true = df["target"]
+
+    probs_ordered = probs[["book_away", "book_draw", "book_home"]]
+
+    acc = accuracy_score(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred)
+    ll = log_loss(y_true, probs_ordered, labels=[-1, 0, 1])
+
+    report = classification_report(
+        y_true,
+        y_pred,
+        labels=[-1, 0, 1],
+        target_names=["Away win", "Draw", "Home win"],
+        zero_division=0,
+    )
+    
+    print("\n BOOKMAKER BASELINE (NO TRAINING)")
+    print("Accuracy:", acc)
+    print("Log-loss:", ll)
+    print("Confusion matrix:\n", cm)
+    print(report)
+    
+    report_path = Path("results/bookmaker_baseline_report.txt")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write("BOOKMAKER BASELINE (NO TRAINING)\n")
+        f.write("================================\n\n")
+        f.write(f"Accuracy: {acc}\n")
+        f.write(f"Log-loss: {ll:.3f}\n\n")
+        f.write("Confusion matrix:\n")
+        f.write(f"{cm}\n\n")
+        f.write(report)
+        if not report.endswith("\n"):
+            f.write("\n")
+
+
+    print("Bookmaker baseline report saved to results/bookmaker_baseline_report.txt")
+
+    return {
+        "accuracy": acc,
+        "log_loss": ll,
+    }
+
+
+def train_models(df: pd.DataFrame, book_metrics: dict = None):
 
     df = df.copy()
     if "match_date" in df.columns:
@@ -217,6 +277,42 @@ def train_models(df: pd.DataFrame):
 
     print("Feature list saved to models/features_list.txt")
 
+    # ======================================================
+    # FINAL RESULTS SUMMARY (MODELS + BOOKMAKER)
+    # ======================================================
+
+    summary_rows = {
+        "Logistic Regression": {
+            "Accuracy": metrics["log_reg"]["accuracy"],
+            "Log-loss": metrics["log_reg"]["log_loss"],
+        },
+        "Random Forest": {
+            "Accuracy": metrics["rf"]["accuracy"],
+            "Log-loss": metrics["rf"]["log_loss"],
+        },
+    }
+
+    if book_metrics is not None:
+        summary_rows["Bookmaker Baseline"] = {
+            "Accuracy": book_metrics["accuracy"],
+            "Log-loss": book_metrics["log_loss"],
+        }
+
+    summary_df = pd.DataFrame.from_dict(summary_rows, orient="index")
+
+    summary_text = (
+        "\n\n==============================\n"
+        "FINAL RESULTS SUMMARY\n"
+        "==============================\n\n"
+        + summary_df.round(4).to_string()
+        + "\n"
+    )
+
+    print(summary_text)
+
+    Path("results").mkdir(parents=True, exist_ok=True)
+    with open("results/final_results_summary.txt", "w", encoding="utf-8") as f:
+        f.write(summary_text)
 
 
     return log_reg, rf, metrics
