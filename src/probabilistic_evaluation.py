@@ -134,7 +134,7 @@ def run_probabilistic_evaluation(
     win_rate = (n_wins / n_total) if n_total else 0.0
 
     if verbose:
-        print("\n Model vs Bookmaker (probabilistic comparison)")
+        print("\nModel vs Bookmaker (probabilistic comparison)")
         print(
             f"Model assigns higher probability than bookmaker on "
             f"{n_wins} / {n_total} matches "
