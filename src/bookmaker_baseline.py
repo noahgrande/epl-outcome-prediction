@@ -26,8 +26,11 @@ def evaluate_bookmaker(df: pd.DataFrame):
 
     y_true = df["target"]
 
+    probs_ordered = probs[["book_away", "book_draw", "book_home"]]
+
     acc = accuracy_score(y_true, y_pred)
     cm = confusion_matrix(y_true, y_pred)
+    ll = log_loss(y_true, probs_ordered, labels=[-1, 0, 1])
 
     report = classification_report(
         y_true,
@@ -36,16 +39,13 @@ def evaluate_bookmaker(df: pd.DataFrame):
         target_names=["Away win", "Draw", "Home win"],
         zero_division=0,
     )
-
-    probs_ordered = probs[["book_away", "book_draw", "book_home"]]
-    ll = log_loss(y_true, probs_ordered, labels=[-1, 0, 1])
-
+    
     print("\n BOOKMAKER BASELINE (NO TRAINING)")
     print("Accuracy:", acc)
+    print("Log-loss:", ll)
     print("Confusion matrix:\n", cm)
     print(report)
-    print(f"Log-loss: {ll:.3f}")
-
+    
     report_path = Path("results/bookmaker_baseline_report.txt")
     report_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -53,12 +53,13 @@ def evaluate_bookmaker(df: pd.DataFrame):
         f.write("BOOKMAKER BASELINE (NO TRAINING)\n")
         f.write("================================\n\n")
         f.write(f"Accuracy: {acc}\n")
+        f.write(f"Log-loss: {ll:.3f}\n\n")
         f.write("Confusion matrix:\n")
         f.write(f"{cm}\n\n")
         f.write(report)
         if not report.endswith("\n"):
             f.write("\n")
-        f.write(f"Log-loss: {ll:.3f}\n")
+
 
     print("Bookmaker baseline report saved to results/bookmaker_baseline_report.txt")
 
