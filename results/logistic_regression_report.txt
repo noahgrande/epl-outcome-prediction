@@ -1,5 +1,13 @@
-LOGISTIC REGRESSION - CLASSIFICATION REPORT
-==========================================
+LOGISTIC REGRESSION
+================================
+
+Accuracy: 0.5369649805447471
+Log-loss: 0.9988175459806676
+
+Confusion matrix:
+[[52  0 37]
+ [23  0 43]
+ [16  0 86]]
 
               precision    recall  f1-score   support
 
@@ -10,3 +18,4 @@ LOGISTIC REGRESSION - CLASSIFICATION REPORT
     accuracy                           0.54       257
    macro avg       0.36      0.48      0.41       257
 weighted avg       0.40      0.54      0.45       257
+
