@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import joblib
+import matplotlib.pyplot as plt
 
 
 from sklearn.linear_model import LogisticRegression
@@ -8,6 +9,32 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, log_loss
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import ConfusionMatrixDisplay
+
+
+from pathlib import Path
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay
+
+def save_confusion_matrix_png(cm, labels, title, out_path, display_labels=None):
+    """
+    Save a confusion matrix as a PNG figure.
+    - cm: numpy array confusion matrix
+    - labels: label order used to compute cm
+    - display_labels: strings shown on axes (optional)
+    """
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=display_labels or labels)
+    fig, ax = plt.subplots()
+    disp.plot(ax=ax, values_format="d")
+    ax.set_title(title)
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=200)
+    plt.close(fig)
+
+
 
 def evaluate_bookmaker(df: pd.DataFrame):
 
@@ -32,6 +59,15 @@ def evaluate_bookmaker(df: pd.DataFrame):
     acc = accuracy_score(y_true, y_pred)
     cm = confusion_matrix(y_true, y_pred)
     ll = log_loss(y_true, probs_ordered, labels=[-1, 0, 1])
+
+    save_confusion_matrix_png(
+        cm=cm,
+        labels=[-1, 0, 1],
+        display_labels=["Away win", "Draw", "Home win"],
+        title="Confusion Matrix — Bookmaker Baseline (Test Set)",
+        out_path="results/visualisation/confusion_matrix_bookmaker.png",
+    )
+
 
     report = classification_report(
         y_true,
@@ -136,6 +172,15 @@ def train_models(df: pd.DataFrame, book_metrics: dict = None):
         labels=log_reg.named_steps["clf"].classes_
     )
 
+    save_confusion_matrix_png(
+        cm=log_cm,
+        labels=[-1, 0, 1],
+        display_labels=["Away win", "Draw", "Home win"],
+        title="Confusion Matrix — Logistic Regression (Test Set)",
+        out_path="results/visualisation/confusion_matrix_logistic_regression.png",
+    )
+
+
     log_report = classification_report(
         y_test,
         y_pred_log,
@@ -218,6 +263,13 @@ def train_models(df: pd.DataFrame, book_metrics: dict = None):
         labels=rf.classes_
     )
 
+    save_confusion_matrix_png(
+        cm=rf_cm,
+        labels=[-1, 0, 1],
+        display_labels=["Away win", "Draw", "Home win"],
+        title="Confusion Matrix — Random Forest (Test Set)",
+        out_path="results/visualisation/confusion_matrix_random_forest.png",
+    )
     rf_report = classification_report(
         y_test,
         y_pred_rf,
