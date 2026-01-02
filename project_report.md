@@ -627,7 +627,40 @@ Finally, while this study focuses exclusively on the English Premier League, the
 
 ## Appendix A: Additional Results
 
-Include supplementary figures or tables that support but aren't essential to the main narrative.
+## Appendix A: Additional Results
+
+This appendix presents supplementary results that support the main findings of the study but are not essential to the core narrative of the report. These additional analyses provide further detail on class-level performance, feature relevance, and probabilistic behavior of the models.
+
+### A.1 Detailed Classification Reports
+
+Table A1 reports the full classification metrics (precision, recall, and F1-score) for the logistic regression, random forest models and the bookmaker baseline on the test set. These results complement the accuracy and log-loss metrics presented in Section 4 by providing a more granular, class-level evaluation.
+
+Logistic regression report : 
+```{.text include="results/logistic_regression_report.txt"}```
+
+Random forest report :
+```{.text include="results/random_forest_report.txt"}```
+
+
+Bookmakers report :
+```{.text include="results/bookmaker_baseline_report.txt"}```
+
+These detailed reports are provided for completeness and transparency and support the discussion presented in Section 5 regarding class imbalance and model limitations.
+
+### A.2 Logistic Regression coefficients and Random Forest features importance
+
+### A.2 Model Interpretability: Coefficients and Feature Importance
+
+This section provides additional interpretability results for both machine learning models.
+
+```{.text include="results/logistic_regression_coefficients.txt"}```
+
+For logistic regression, model coefficients are reported for each outcome class in a one-vs-rest formulation.
+
+```{.text include="results/random_forest_feature_importance.txt"}```
+
+For the random forest model, feature importance scores based on impurity reduction are presented.
+
 
 ## Appendix B: Code Repository
 
@@ -820,4 +853,4 @@ pandoc project_report.md \
     });
     </script>
 </body>
-</html>
+</html

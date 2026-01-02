@@ -54,6 +54,7 @@ models/features.txt
 ## Methodology
 
 ### Models
+
 Two machine learning models are trained:
 
 - **Logistic Regression**
@@ -65,6 +66,7 @@ Two machine learning models are trained:
   - captures complex interactions between features
 
 ### Train-Test Split
+
 A **temporal split** is used:
 - first 80% of matches → training set  
 - last 20% of matches → test set  
@@ -179,7 +181,7 @@ conda activate epl-match-prediction-1
 Run the full pipeline:
 python main.py
 
-## Tests
+## Tests
 
 Run the test suite:
 python -m pytest
