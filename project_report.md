@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your Project Title Here | Advanced Programming 2025</title>
+    <title>English Premier League outcome Prediction | Advanced Programming 2025</title>
     <meta name="description" content="Course materials and resources for Advanced Programming at UNIL">
     <link rel="stylesheet" href="/course-materials/assets/css/style.css">
     <link rel="canonical" href="https://ap-unil-2025.github.io/course-materials/assets/templates/project_report_template_md.txt">
@@ -17,7 +17,7 @@
     <meta name="theme-color" content="#003aff">
     
     <!-- Citation Metadata -->
-    <meta name="citation_title" content="Your Project Title Here">
+    <meta name="citation_title" content="English Premier League outcome Prediction">
     <meta name="citation_author" content="Scheidegger, Simon">
     <meta name="citation_author" content="Smirnova, Anna">
     <meta name="citation_publication_date" content="2025">
@@ -26,7 +26,7 @@
     <meta name="citation_pdf_url" content="https://ap-unil-2025.github.io/course-materials/assets/course-materials.pdf">
     
     <!-- Dublin Core Metadata -->
-    <meta name="DC.title" content="Your Project Title Here">
+    <meta name="DC.title" content="English Premier League outcome Prediction">
     <meta name="DC.creator" content="Simon Scheidegger">
     <meta name="DC.creator" content="Anna Smirnova">
     <meta name="DC.subject" content="Data Science">
@@ -86,9 +86,9 @@
     </script>
     
     <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Your Project Title Here | Advanced Programming 2025</title>
+<title>English Premier League outcome Prediction | Advanced Programming 2025</title>
 <meta name="generator" content="Jekyll v4.3.4" />
-<meta property="og:title" content="Your Project Title Here" />
+<meta property="og:title" content="English Premier League outcome Prediction" />
 <meta name="author" content="Your Name (your.email@unil.ch)" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Course materials and resources for Advanced Programming at UNIL" />
@@ -99,7 +99,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2025-12-01T00:00:00+00:00" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Your Project Title Here" />
+<meta property="twitter:title" content="English Premier League outcome Prediction" />
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Your Name (your.email@unil.ch)"},"dateModified":"2025-12-01T00:00:00+00:00","datePublished":"2025-12-01T00:00:00+00:00","description":"Course materials and resources for Advanced Programming at UNIL","headline":"Your Project Title Here","mainEntityOfPage":{"@type":"WebPage","@id":"https://ap-unil-2025.github.io/course-materials/assets/templates/project_report_template_md.txt"},"url":"https://ap-unil-2025.github.io/course-materials/assets/templates/project_report_template_md.txt"}</script>
 <!-- End Jekyll SEO tag -->
@@ -664,7 +664,7 @@ For the random forest model, feature importance scores based on impurity reducti
 
 ## Appendix B: Code Repository
 
-**GitHub Repository:** https://github.com/yourusername/project-repo
+**GitHub Repository:** https://github.com/noahgrande/epl-outcome-prediction.git
 
 ### Repository Structure
 
