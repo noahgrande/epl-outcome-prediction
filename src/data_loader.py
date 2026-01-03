@@ -70,10 +70,28 @@ team_name_normalization = {
 }
 
 def normalize_team(x):
+    """
+    Normalize a team name to a canonical format.
+
+    This reduces inconsistencies across data sources (e.g., "Man Utd", "MU",
+    "Manchester United") to make merges and aggregations reliable.
+
+    Args:
+        x: Raw team name (any type; will be cast to string).
+
+    Returns:
+        str: Normalized, canonical team name in lowercase.
+    """
     x = str(x).lower().strip()
     return team_name_normalization.get(x, x)
 
 def normalize_formation(f):
+    """
+    Normalize a football formation string into a consistent dashed format.
+
+    Handles multiple input formats (e.g., "4-2-3-1", "4/2/3/1", mixed text),
+    aiming to reduce noise in categorical features.
+    """
 
     if pd.isna(f):
         return f
@@ -97,6 +115,18 @@ def normalize_formation(f):
     return "-".join(nums[:3])
 
 def norm_referee(x):
+    """
+    Normalize referee names to a consistent full-name format.
+
+    This reduces merge issues and duplicate categories caused by inconsistent
+    abbreviations, punctuation, and capitalization across sources.
+
+    Args:
+        x: Referee name value (may be NaN).
+
+    Returns:
+        Normalized referee name (NaN preserved).
+    """
     
     if pd.isna(x):
         return x
@@ -219,6 +249,17 @@ useful_cols = [
 ]
 
 def load_raw():
+    """
+    Load and clean the raw match-level team statistics dataset.
+
+    The function standardizes column names, parses dates robustly, normalizes
+    team/opponent names, referee names, and formation strings, and keeps only
+    a curated set of useful columns. It also extracts a numeric matchweek to
+    ensure correct chronological sorting.
+
+    Returns:
+        pd.DataFrame: Cleaned dataset sorted by season, matchweek, team, and date.
+    """
     df = pd.read_csv(RAW_FILE_MATCHDATA)
 
     df.columns = (
@@ -260,12 +301,35 @@ BASE_FILE = "data/processed/matchdata_base.csv"
 OUT_FILE = "data/processed/matchdata_clean.csv"
 
 def load_base():
+    """
+    Load the pre-built base dataset and ensure correct date typing.
+
+    This function assumes the base dataset has already been cleaned and saved,
+    and enforces datetime parsing to prevent downstream sorting/feature issues.
+
+    Returns:
+        pd.DataFrame: Base dataset with match_date as datetime.
+    """
     df = pd.read_csv(BASE_FILE)
     df["match_date"] = pd.to_datetime(df["match_date"])
     return df
 
     
 def prepare_home_away(df):
+    """
+    Split team-level rows into home and away subsets and create a shared match_id.
+
+    The source dataset contains one row per team per match (two rows per match).
+    We generate a stable match identifier based on date + (home_team, away_team)
+    so that home and away rows can be merged into a single match-level record.
+
+    Args:
+        df (pd.DataFrame): Team-level dataset containing 'venue', 'match_date',
+            'team', and 'opponent' columns.
+
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame]: (home_df, away_df) each with a match_id.
+    """
     
 
     df["is_home"] = df["venue"].str.lower().eq("home")
@@ -299,6 +363,20 @@ def prepare_home_away(df):
 
     
 def pivot_matches(home, away):
+    """
+    Convert home/away team-level tables into a single match-level table.
+
+    This creates one row per match, with separate prefixes for home and away
+    metrics (e.g., home_xg, away_xg). This wide format is convenient for
+    merging bookmaker odds and for feature engineering at match level.
+
+    Args:
+        home (pd.DataFrame): Home-team rows with match_id.
+        away (pd.DataFrame): Away-team rows with match_id.
+
+    Returns:
+        pd.DataFrame: Match-level dataset (one row per match).
+    """
 
     merged = home.merge(
         away,
@@ -416,6 +494,19 @@ keep_cols = list(column_map.keys())
 
     
 def load_file(path):
+    """
+    Load and standardize one raw season file containing match info and bookmaker odds.
+
+    The source files may contain extra columns and inconsistent naming. This function
+    keeps only relevant columns, renames them to a common schema, parses dates, and
+    normalizes team and referee names to ensure reliable merges later.
+
+    Args:
+        path: Path to a raw CSV file.
+
+    Returns:
+        pd.DataFrame: Cleaned file-level dataset with standardized column names.
+    """
     df = pd.read_csv(path)
 
     df = df[[c for c in keep_cols if c in df.columns]].copy()
@@ -432,6 +523,18 @@ def load_file(path):
 
 
 def build_match_id(row):
+    """
+    Build a stable match identifier from date and teams.
+
+    This key is used to merge match statistics with bookmaker odds, and must be
+    consistent across datasets.
+
+    Args:
+        row: A DataFrame row with 'match_date', 'home_team', and 'away_team'.
+
+    Returns:
+        str: match_id in the format 'YYYY-MM-DD_home_away'.
+    """
     return (
         f"{row['match_date'].strftime('%Y-%m-%d')}_"
         f"{row['home_team'].replace(' ', '_').lower()}_"
@@ -439,6 +542,15 @@ def build_match_id(row):
     )
 
 def build_all():
+    """
+    Build a unified dataset from multiple raw season files (odds/match info).
+
+    Loads selected season files, concatenates them into one table, filters to a
+    cutoff date to avoid incomplete periods, and creates a match_id for merging.
+
+    Returns:
+        pd.DataFrame: Concatenated dataset with a match_id column.
+    """
     raw = Path(RAW_DIR)
     files = sorted([f for f in raw.glob("*.csv") if f.name.startswith(("21_22", "22_23", "23_24", "24_25"))])
 
@@ -458,6 +570,19 @@ ALLMATCHES_FILE = "data/processed/all_matches_clean.csv"
 MERGED_OUT_FILE = "data/processed/data_merged.csv"
 
 def merge_dataset(matchdata: pd.DataFrame, allm: pd.DataFrame) -> pd.DataFrame:
+    """
+    Merge match statistics with bookmaker odds using match_id.
+
+    To avoid ambiguous duplicates (same information present in both datasets),
+    we drop "duplicate intent" columns from the odds dataset before merging.
+
+    Args:
+        matchdata (pd.DataFrame): Match-level statistics dataset (one row per match).
+        allm (pd.DataFrame): Odds/match info dataset containing bookmaker columns.
+
+    Returns:
+        pd.DataFrame: Merged dataset with odds appended to matchdata.
+    """
 
     duplicate_intent_cols = [
         "match_date",
@@ -484,6 +609,19 @@ def merge_dataset(matchdata: pd.DataFrame, allm: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 
 def build_data_before_engineering(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert match-level data into a team-level table suitable for rolling features.
+
+    The output has one row per team per match (two rows per match). This format
+    makes it straightforward to compute past-performance features (rolling means)
+    per team while preventing target leakage by shifting values.
+
+    Args:
+        df (pd.DataFrame): Match-level dataset containing home/away stats and odds.
+
+    Returns:
+        pd.DataFrame: Team-level dataset with points and standardized columns.
+    """
     df = df.copy()
 
     df["match_date"] = pd.to_datetime(df["match_date"])
@@ -583,6 +721,18 @@ def build_data_before_engineering(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 
 def build_team_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute rolling performance features per team within each season.
+
+    All rolling metrics are shifted by 1 match to avoid target leakage: the features
+    for a given match only depend on matches that occurred before it.
+
+    Args:
+        df (pd.DataFrame): Team-level dataset (two rows per match) with points and stats.
+
+    Returns:
+        pd.DataFrame: Same dataset with added rolling feature columns.
+    """
     df = df.copy()
 
     df = df.sort_values(
@@ -661,6 +811,22 @@ def build_team_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 
 def build_match_level_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Build the final match-level modeling table from team-level rolling features.
+
+    The function merges the home and away rows for each match, constructs
+    difference features (home minus away) to represent relative strength, and
+    derives a 3-class target label:
+        1  = home win
+        0  = draw
+        -1 = away win
+
+    Args:
+        df (pd.DataFrame): Team-level dataset with rolling features and points.
+
+    Returns:
+        pd.DataFrame: Match-level modeling dataset with diff_* features and target.
+    """
     home = df[df["is_home"] == 1].copy()
     away = df[df["is_home"] == 0].copy()
 
