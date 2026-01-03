@@ -11,17 +11,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import ConfusionMatrixDisplay
 
-
-from pathlib import Path
-import matplotlib.pyplot as plt
-from sklearn.metrics import ConfusionMatrixDisplay
-
 def save_confusion_matrix_png(cm, labels, title, out_path, display_labels=None):
     """
-    Save a confusion matrix as a PNG figure.
-    - cm: numpy array confusion matrix
-    - labels: label order used to compute cm
-    - display_labels: strings shown on axes (optional)
+    Save a confusion matrix figure to disk as a PNG.
+    This helper centralizes plotting logic so that all models (and the bookmaker
+    baseline) produce comparable, consistently formatted confusion matrix figures
+    for reporting and reproducibility.
     """
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -37,6 +32,22 @@ def save_confusion_matrix_png(cm, labels, title, out_path, display_labels=None):
 
 
 def evaluate_bookmaker(df: pd.DataFrame):
+    """
+    Evaluate a bookmaker baseline using implied probabilities from odds.
+
+    Odds are converted to implied probabilities and normalized per match.
+    This provides a strong, realistic reference point to contextualize ML
+    performance (accuracy and probabilistic calibration via log-loss).
+
+    Args:
+        df (pd.DataFrame): Match-level dataset containing odds and the true target.
+            Required columns: odds_win, odds_draw, odds_lose, target.
+
+    Returns:
+        dict: Summary metrics for the bookmaker baseline with keys:
+            - "accuracy" (float)
+            - "log_loss" (float)
+    """
 
     required_cols = ["odds_win", "odds_draw", "odds_lose", "target"]
     df = df.dropna(subset=required_cols).copy()
@@ -107,6 +118,35 @@ def evaluate_bookmaker(df: pd.DataFrame):
 
 
 def train_models(df: pd.DataFrame, book_metrics: dict = None):
+    """
+    Train and evaluate ML classifiers on engineered match-level features.
+
+    The function performs a chronological train/test split (to better reflect
+    real-world forecasting), trains a scaled Logistic Regression pipeline and
+    a Random Forest model, and saves evaluation artifacts (reports, confusion
+    matrices, feature importances/coefficients, trained model files).
+
+    If bookmaker metrics are provided, it also produces a unified final summary
+    to compare ML models against the bookmaker baseline.
+
+    Args:
+        df (pd.DataFrame): Match-level modeling dataset containing diff_* features
+            and a multiclass target.
+            Expected:
+              - Features: columns starting with "diff_"
+              - Target: "target" with values in {-1, 0, 1}
+              - Optional: "match_date" used to sort chronologically
+        book_metrics (dict | None): Optional bookmaker baseline metrics as returned
+            by evaluate_bookmaker(), used to include baseline performance in the
+            final summary.
+
+    Returns:
+        tuple: (log_reg_model, rf_model, metrics)
+            - log_reg_model: sklearn Pipeline (StandardScaler + LogisticRegression)
+            - rf_model: RandomForestClassifier
+            - metrics (dict): Nested dictionary with per-model metrics (accuracy,
+              log_loss, classes).
+    """
 
     df = df.copy()
     if "match_date" in df.columns:
@@ -159,7 +199,7 @@ def train_models(df: pd.DataFrame, book_metrics: dict = None):
 
             f.write("\n")
 
-    print("Logistic regression summary saved to results/logistic_regression_coefficient.txt")
+    print("Logistic regression summary saved to results/logistic_regression_coefficients.txt")
 
     y_pred_log = log_reg.predict(x_test)
     y_proba_log = log_reg.predict_proba(x_test)
