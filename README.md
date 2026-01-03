@@ -166,7 +166,7 @@ To ensure reproducibility:
 
 ---
 
-## Environment Setup
+## Environment Setup -- with conda
 
 Create the Conda environment:
 
@@ -175,6 +175,20 @@ conda env create -f environment.yml
 Activate the environment:
 conda activate epl-match-prediction-1
 
+## Environment Setup -- without conda
+
+Although using Conda is recommended—as it automatically manages both the Python version and package dependencies—the project does not rely on advanced environment-specific features.
+
+This project was developed using Python 3.10. Please ensure that your environment includes the following dependencies:
+
+  - pandas
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - joblib
+  - pytest
+  - jupyter
 
 ## How to Run
 
