@@ -7,6 +7,22 @@ from sklearn.pipeline import Pipeline
 
 
 def bookmaker_probabilities(row):
+    """
+    Convert bookmaker odds into normalized implied probabilities.
+
+    Bookmaker odds are inverted to approximate implied probabilities, then
+    normalized to sum to 1 per match. This produces a probability distribution
+    that can be directly compared to model predicted probabilities.
+
+    Args:
+        row: A pandas row containing odds columns: odds_win, odds_draw, odds_lose.
+
+    Returns:
+        dict: Normalized bookmaker probabilities with keys:
+            - "book_home"
+            - "book_draw"
+            - "book_away"
+    """
     
     p_home = 1 / row["odds_win"]
     p_draw = 1 / row["odds_draw"]
@@ -22,6 +38,19 @@ def bookmaker_probabilities(row):
 
 
 def decode_result(target):
+    """
+    Convert numeric target labels into human-readable match outcomes.
+
+    This improves interpretability when printing sample predictions and helps
+    produce report-friendly outputs.
+
+    Args:
+        target (int): Outcome label encoded as:
+            1 = home win, 0 = draw, -1 = away win.
+
+    Returns:
+        str: Human-readable label ("Home win", "Draw", "Away win").
+    """
 
     if target == 1:
         return "Home win"
@@ -32,6 +61,23 @@ def decode_result(target):
 
 
 def model_beats_bookmaker(row):
+    """
+    Check whether the model assigns higher probability than the bookmaker
+    to the true (observed) outcome.
+
+    This comparison focuses on confidence in the real outcome rather than
+    simply predicting the most likely class, making it suitable for a
+    probabilistic evaluation of model vs market beliefs.
+
+    Args:
+        row: A pandas row containing:
+            - target
+            - model_home_win, model_draw, model_away_win
+            - book_home, book_draw, book_away
+
+    Returns:
+        bool: True if model probability > bookmaker probability for the true outcome.
+    """
 
     if row["target"] == 1:      
         return row["model_home_win"] > row["book_home"]
@@ -47,6 +93,31 @@ def run_probabilistic_evaluation(
     sample_n: int = 5,
     verbose: bool = True,
 ):
+    """
+    Compare model predicted probabilities against bookmaker implied probabilities.
+
+    The dataset is split chronologically (80/20) to approximate a forecasting
+    setting. A logistic regression pipeline is trained on the training portion,
+    then predicted probabilities are generated on the test set. Bookmaker odds
+    are converted to implied probabilities for the same matches. The function
+    measures how often the model assigns a higher probability than the bookmaker
+    to the true outcome and exports a comparison table for analysis/reporting.
+
+    Args:
+        data_path (Path | str): Path to the prepared modeling dataset (model_data.csv).
+        output_path (Path | str): Destination CSV path for the probability comparison table.
+        sample_n (int): Number of test matches to print as a qualitative sanity check.
+        verbose (bool): If True, print progress and sample predictions.
+
+    Returns:
+        tuple[pd.DataFrame, dict]: (df_final, summary)
+            - df_final: Test-set table with model and bookmaker probabilities, plus
+              a boolean column 'model_beats_bookmaker'.
+            - summary: Dictionary with keys:
+                - "n_total" (int): number of test matches
+                - "n_wins" (int): number of matches where model > bookmaker on true outcome
+                - "win_rate" (float): n_wins / n_total
+    """
     
     data_path = Path(data_path)
     output_path = Path(output_path)
