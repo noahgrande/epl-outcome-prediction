@@ -137,7 +137,7 @@ To ensure reproducibility:
 ---
 
 ## Project Structure
-
+```
 ├── main.py
 ├── src/
 │ ├── data_loader.py
@@ -162,6 +162,7 @@ To ensure reproducibility:
 │ └── test_pipeline.py
 ├── environment.yml
 └── README.md
+```
 
 
 ---
@@ -180,7 +181,7 @@ conda activate epl-match-prediction-1
 Although using Conda is recommended—as it automatically manages both the Python version and package dependencies—the project does not rely on advanced environment-specific features.
 
 This project was developed using Python 3.10. Please ensure that your environment includes the following dependencies:
-
+```
   - pandas
   - numpy
   - scikit-learn
@@ -189,16 +190,16 @@ This project was developed using Python 3.10. Please ensure that your environmen
   - joblib
   - pytest
   - jupyter
-
+```
 ## How to Run
 
 Run the full pipeline:
-python main.py
+`python main.py`
 
 ## Tests
 
 Run the test suite:
-python -m pytest
+`python -m pytest`
 
 
 ## Notes
