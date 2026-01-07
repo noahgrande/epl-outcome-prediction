@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
-from src.bookmaker_baseline import evaluate_bookmaker
+from src.models import evaluate_bookmaker
 from src.probabilistic_evaluation import bookmaker_probabilities
     
 def load_model_data():
