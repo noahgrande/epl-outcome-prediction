@@ -138,12 +138,7 @@ To ensure reproducibility:
 
 ## Project Structure
 ```
-├── main.py
-├── src/
-│ ├── data_loader.py
-│ ├── models.py
-│ ├── bookmaker_baseline.py
-│ └── probabilistic_evaluation.py
+
 ├── data/
 │ ├── raw/
 │ └── processed/
@@ -152,15 +147,26 @@ To ensure reproducibility:
 │ ├── random_forest.pkl
 │ └── features.txt
 ├── results/
+│ ├── bookmakers_baseline_report.txt
+│ ├── final_results_summary.txt
+│ ├── logistic_regression_coefficients.txt
 │ ├── logistic_regression_report.txt
-│ ├── random_forest_report.txt
+│ ├── logistics_regression_summary.txt
+│ ├── match_probabilities_comparison.csv
 │ ├── random_forest_feature_importance.txt
-│ └── match_probabilities_comparison.csv
-├── notebooks/
-│ └── 01_exploration_and_features.ipynb
+│ └── random_forest_report.txt 
+├── src/
+│ ├── __init__.py
+│ ├── data_loader.py
+│ ├── models.py
+│ ├── probabilistic_evaluation.py
+│ └── statistics_analysis.py
 ├── tests/
 │ └── test_pipeline.py
+├── .gitignore
 ├── environment.yml
+├── main.py
+├── project_report.tex
 └── README.md
 ```
 
