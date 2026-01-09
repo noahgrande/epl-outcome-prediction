@@ -27,10 +27,11 @@ Each match is represented by:
 Only **pre-match information** is used to avoid data leakage.
 
 The target variable is encoded as:
+```
 - '1' → Home win  
 - '0'  → Draw  
 - '-1' → Away win  
-
+```
 ---
 
 ## Feature Engineering
@@ -145,7 +146,7 @@ To ensure reproducibility:
 ├── models/
 │ ├── logistic_regression.pkl
 │ ├── random_forest.pkl
-│ └── features.txt
+│ └── features_list.txt
 ├── results/
 │ ├── bookmakers_baseline_report.txt
 │ ├── final_results_summary.txt
@@ -177,10 +178,10 @@ To ensure reproducibility:
 
 Create the Conda environment:
 
-conda env create -f environment.yml
+`conda env create -f environment.yml`
 
 Activate the environment:
-conda activate epl-match-prediction-1
+`conda activate epl-match-prediction-1`
 
 ## Environment Setup -- without conda
 
