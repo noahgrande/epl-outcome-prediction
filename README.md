@@ -168,6 +168,7 @@ To ensure reproducibility:
 ├── environment.yml
 ├── main.py
 ├── project_report.tex
+├── PROPOSAL.md
 └── README.md
 ```
 
