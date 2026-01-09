@@ -212,5 +212,4 @@ This project follows good machine learning and software engineering practices:
 - transparent evaluation
 
 It is intended as an academic demonstration of applied data science.
-
-
+ 
