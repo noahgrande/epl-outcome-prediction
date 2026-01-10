@@ -447,6 +447,11 @@ Mendel Journal. (2017).
 \textit{Machine learning approaches in football analytics}.
 Available at: \url{https://mendel-journal.org/index.php/mendel/article/view/263/217}
 
+\bibitem{ref23}
+First Data set
+\textit{Match_data_21_25}.
+Available at: \url{}
+
 \end{thebibliography}
 
 
@@ -487,29 +492,36 @@ The repository follows a clear and modular structure to ensure readability and r
 
 \begin{verbatim}
 epl-outcome-prediction/
-├── README.md
-├── environment.yml
 ├── data/
-│   ├── raw/
-│   └── processed/
-├── src/
-│   ├── data_loader.py
-│   ├── feature_engineering.py
-│   ├── models.py
-│   ├── bookmaker_baseline.py
-│   ├── probabilistic_evaluation.py
-│   └── main.py
-├── notebooks/
-│   └── exploration.ipynb
+│ ├── raw/
+│ └── processed/
+├── models/
+│ ├── logistic_regression.pkl
+│ ├── random_forest.pkl
+│ └── features_list.txt
 ├── results/
-│   ├── visualisation/
-│   ├── logistic_regression_report.txt
-│   ├── random_forest_report.txt
-│   └── bookmaker_baseline_report.txt
-└── models/
-    ├── logistic_regression.pkl
-    ├── random_forest.pkl
-    └── feature_list.txt
+│ ├── bookmakers_baseline_report.txt
+│ ├── final_results_summary.txt
+│ ├── logistic_regression_coefficients.txt
+│ ├── logistic_regression_report.txt
+│ ├── logistics_regression_summary.txt
+│ ├── match_probabilities_comparison.csv
+│ ├── random_forest_feature_importance.txt
+│ └── random_forest_report.txt 
+├── src/
+│ ├── __init__.py
+│ ├── data_loader.py
+│ ├── models.py
+│ ├── probabilistic_evaluation.py
+│ └── statistics_analysis.py
+├── tests/
+│ └── test_pipeline.py
+├── .gitignore
+├── environment.yml
+├── main.py
+├── project_report.tex
+├── PROPOSAL.md
+└── README.md
 \end{verbatim}
 
 This structure separates raw data, processed datasets, source code, results, and trained models, 
@@ -543,5 +555,40 @@ python src/main.py
 The script generates trained models, evaluation reports, confusion matrices, and probabilistic 
 comparison files in the \texttt{results/} directory. The chronological train/test split ensures 
 that no temporal leakage occurs during evaluation.
+
+
+\section{AI Usage Statement}
+
+\subsection{Use of Artificial Intelligence Tools}
+
+This project was developed with limited and transparent use of Artificial Intelligence (AI) tools, in accordance with the course rules and academic integrity guidelines.
+
+AI tools (notably large language models such as ChatGPT) were used \textbf{exclusively as supportive tools} during the development process. 
+
+Their use was restricted to the following purposes:
+
+- Clarifying programming concepts (e.g. Python syntax, machine learning workflows, evaluation metrics).
+
+- Improving code readability, structure, and documentation (comments, docstrings, README formatting).
+
+- Assisting with debugging by suggesting potential causes of errors or alternative implementations.
+
+- Helping reformulate explanations in a clearer and more academic style, particularly in English.
+
+\subsection{What AI Was Not Used For}
+
+AI tools were not used for:
+
+- Generating final model results or empirical findings.
+
+- Designing the core methodology of the project.
+
+- Making modeling decisions without human validation.
+
+- Automatically writing complete solutions that were submitted without understanding or modification.
+
+- Producing figures, tables, or numerical outputs directly used in the report.
+
+All modeling choices, data preprocessing steps, feature engineering decisions, experiments, evaluations, and interpretations were **designed and implemented by student**.
 
 \end{document}
