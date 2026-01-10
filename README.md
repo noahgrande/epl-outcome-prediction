@@ -139,7 +139,7 @@ To ensure reproducibility:
 
 ## Project Structure
 ```
-
+epl-outcome-prediction/
 ├── data/
 │ ├── raw/
 │ └── processed/
