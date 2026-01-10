@@ -16,6 +16,9 @@ from src.models import evaluate_bookmaker, train_models
 
 from src.probabilistic_evaluation import run_probabilistic_evaluation
 
+from src.statistics_analysis import run_stats
+
+
 
 
 def main():
@@ -111,6 +114,9 @@ def main():
 
     print("\n▶ Step 10: probabilistic model vs bookmaker evaluation")
     run_probabilistic_evaluation()
+
+    print("\n▶ Step 11: stats + plots on probabilistic comparison")
+    run_stats()
 
 
     print("PIPELINE FINISHED SUCCESSFULLY")
