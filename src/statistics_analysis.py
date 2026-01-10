@@ -9,6 +9,23 @@ VIS_PATH.mkdir(parents=True, exist_ok=True)
 
 
 def load_results():
+    """
+    Load the probabilistic comparison results between the ML model
+    and the bookmaker baseline.
+
+    This function reads the CSV file produced by the probabilistic
+    evaluation step, which contains predicted probabilities from
+    the model, implied probabilities from bookmakers, and indicators
+    of whether the model assigns a higher probability to the realized
+    outcome.
+
+    Raises:
+        FileNotFoundError: If the probabilistic comparison file does not exist.
+
+    Returns:
+        pandas.DataFrame: DataFrame containing match-level probabilistic
+        predictions and comparison metrics.
+    """
     if not RESULTS_PATH.exists():
         raise FileNotFoundError(
             "match_probabilities_comparison.csv not found. "
@@ -96,7 +113,6 @@ def plot_result_distribution_when_model_wins(df):
     plt.ylabel("Percentage (%)")
     plt.title("Result distribution when model > bookmaker")
     plt.tight_layout()
-    plt.show()
     plt.savefig(
         VIS_PATH/ "result_distribution_when_model_beats_bookmaker.png",
         bbox_inches="tight"
@@ -146,7 +162,7 @@ def plot_probability_difference_distribution(df):
 
 
 
-def main():
+def run_stats():
     print("Loading probabilistic comparison results...")
     df = load_results()
 
